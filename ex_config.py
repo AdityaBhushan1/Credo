@@ -1,0 +1,17 @@
+client_id   = '' 
+token = ''
+postgresqlusername = ''
+postgresqlpass = ''
+postgresqldb = ''
+postgresqlhost = ''
+color = 
+guild = 
+logo = ''
+omdbapi_key = ''
+weather_api_key = ''
+api_alexflipnote = ''
+top_gg = ''
+ksoft_api_key = ''
+tenor_apikey = ''
+prefix = 't?'
+owner = 
