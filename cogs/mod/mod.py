@@ -106,7 +106,7 @@ class Mod(commands.Cog, name='Moderation'):
     @commands.command()
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
-    async def kick(self, ctx, member: MemberID, *, reason:ActionReason = None):
+    async def kick(self, ctx, member: discord.Member, *, reason:ActionReason = None):
         '''
         Kicks A Member From Server
         '''
