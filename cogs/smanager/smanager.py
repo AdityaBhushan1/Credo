@@ -10,6 +10,7 @@ from disputils import  BotConfirmation
 from .listners import SmanagerListeners
 from .tasks import SmanagerTasks
 from .tag_check import TagCheckListners
+from ..utils import expectations
 
 class SManager(commands.Cog):
     def __init__(self, bot):
@@ -31,8 +32,7 @@ class SManager(commands.Cog):
         '''
         data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
         if data == False:
-            await ctx.send(f'{emote.error} | This Server Dose Not Have Bot Setuped Here Use `*setup`')
-            return
+            raise expectations.NotSetup
         scrims_manager = await self.bot.db.fetchval('SELECT scrims_manager FROM server_configs WHERE guild_id = $1',ctx.guild.id)
         if scrims_manager == False:
             start_msg = await ctx.send(f'{emote.loading} | Setting Up Scrims Manager')
