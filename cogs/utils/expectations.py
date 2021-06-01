@@ -6,11 +6,8 @@ class TeaBoterror(commands.CheckFailure):
 class InvalidColor(TeaBoterror):
     def __init__(self, argument):
         super().__init__(
-            f"{emote.error} |`{argument}` doesn't seem to be a valid color, \nPick a correct colour from [here](https://www.google.com/search?q=color+picker)"
+            f"{emote.error} | `{argument}` doesn't seem to be a valid color, \nPick a correct colour from [here](https://www.google.com/search?q=color+picker)"
         )
-
-class InputError(TeaBoterror):
-    pass
 
 class PastTime(TeaBoterror):
     def __init__(self):
@@ -29,5 +26,5 @@ class InvalidTime(TeaBoterror):
 class NotSetup(TeaBoterror):
     def __init__(self):
         super().__init__(
-            f"{emote.error} |This command requires you to have Quotient's private channel.\nKindly setup teh bot and try again."
+            f"{emote.error} | This command requires you to have Tea Bot Setuped In This Server.\nKindly setup the bot and try again."
         )
