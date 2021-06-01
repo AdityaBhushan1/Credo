@@ -4,7 +4,7 @@ from discord.ext.commands import errors
 from ..utils.emote import xmark,error
 from ..utils.replies import NEGATIVE_REPLIES,ERROR_REPLIES
 import random
-from ..utils import exceptions
+from ..utils import expectations
 class Error(commands.Cog,name='Error'):
 
     def __init__(self,bot):
@@ -14,8 +14,9 @@ class Error(commands.Cog,name='Error'):
     async def on_command_error(self,ctx, error):
         if hasattr(ctx.command, 'on_error'):
             return
-        elif isinstance(error, exceptions.TeaBoterror):
-            return await ctx.error(f'{xmark} | {error.__str__().format(ctx=ctx)}')
+            
+        elif isinstance(error, expectations.TeaBoterror):
+            return await ctx.error(f'{error.__str__().format(ctx=ctx)}')
             
         elif isinstance(error, commands.MissingPermissions):
             permissions = '\n'.join(
