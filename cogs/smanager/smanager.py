@@ -139,12 +139,30 @@ class SManager(commands.Cog):
 
         if succes_reg_role.content == f'{ctx.prefix}cancel':
             return await ctx.send('Aborting.')
+
         if len(succes_reg_role.role_mentions) == 0 or len(succes_reg_role.role_mentions) > 1:
             return await ctx.send(embed=inncorrect_role_mention)
         try:
             fetched_succes_reg_role = await commands.RoleConverter().convert(ctx,succes_reg_role.content)
         except:
-            await ctx.send(embed=inncorrect_role_mention)
+            return await ctx.error(embed=inncorrect_role_mention)
+        else:
+            if fetched_succes_reg_role.managed:
+                return await self.ctx.error(f"{emote.error} | Role is an integrated role and cannot be added manually.")
+            if fetched_succes_reg_role > self.ctx.me.top_role:
+                await self.ctx.error(
+                    f"{emote.error} | The position of {fetched_succes_reg_role.mention} is above my top role. So I can't give it to anyone.\nKindly move {self.ctx.me.top_role.mention} above {fetched_succes_reg_role.mention} in Server Settings."
+                )
+                self.stop()
+                return
+
+            if self.ctx.author.id != self.ctx.guild.owner_id:
+                if fetched_succes_reg_role > self.ctx.author.top_role:
+                    await self.ctx.error(
+                        f"{emote.error} | The position of {fetched_succes_reg_role.mention} is above your top role {self.ctx.author.top_role.mention}."
+                    )
+                    self.stop()
+                    return
 # question 4
         q4 = discord.Embed(description = f'🛠️ Sweet! So I Will give This Role {fetched_succes_reg_role.mention} For Correct Registration \nQ4. How many total slots do you have? **Note: Maximum Nuber Of Slots Is `25`** ',color=self.bot.color)
         q4.set_footer(text = f'**Type `{ctx.prefix}cancel` To Cancel Setup Any Time**')
