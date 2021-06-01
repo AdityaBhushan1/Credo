@@ -10,13 +10,14 @@ import re
 import discord
 from .languagess import get_language
 from discord.ext.buttons import Paginator
-from discord.ext import commands,menus
+from discord.ext import commands
 from discord.ext.commands import Paginator as CommandPaginator
 from . import emote
+from . import menus
 
 
 
-# ##########################################################################################################################
+###########################################################################################################################
 class Pag(Paginator):
     async def teardown(self):
         try:
