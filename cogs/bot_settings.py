@@ -2,6 +2,7 @@ from discord.ext import commands
 from .utils import emote
 import discord
 from .utils.checks import is_bot_setuped
+from .utils import expectations
 class BotSettings(commands.Cog):
     """Handles the bot's configuration system.
 
@@ -60,12 +61,14 @@ class BotSettings(commands.Cog):
 
     
     @config.command(name='automeme-set')
-    @is_bot_setuped()
     @commands.has_permissions(manage_guild=True)
     async def config_autommeme_set(self,ctx,channel:discord.TextChannel):
         '''
         Turn On Automeme
         '''
+        data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
+        if data == False:
+            raise expectations.NotSetup
         await ctx.db.execute('UPDATE public.server_configs SET automeme_channel_id = $2,automeme_toogle = $3 WHERE guild_id = $1', ctx.guild.id, channel.id,True)
         await ctx.send(f'{emote.tick} | Successfully Setuped Automeme Channel To {channel.mention}')
 
@@ -78,12 +81,14 @@ class BotSettings(commands.Cog):
             await ctx.send_help(ctx.command)
 
     @autorole.command(name='set-human')
-    @is_bot_setuped()
     @commands.has_permissions(manage_guild=True)
     async def autorole_set_human(self,ctx,role:discord.Role):
         '''
         Sets The Autorole For Human 
         '''
+        data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
+        if data == False:
+            raise expectations.NotSetup
         botrole = discord.utils.get(ctx.guild.roles,name="TEA BOT")
         if role.position > botrole.position:
             await ctx.send(f'{emote.error} | My Role Is Not Above The Mentioned Role, Please Put My Role Above The Mentioned Role And Try Again')
@@ -95,12 +100,14 @@ class BotSettings(commands.Cog):
 
 
     @autorole.command(name='set-bot')
-    @is_bot_setuped()
     @commands.has_permissions(manage_guild=True)
     async def autorole_set_bot(self,ctx,role:discord.Role):
         '''
         Sets The Autorole For Bots 
         '''
+        data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
+        if data == False:
+            raise expectations.NotSetup
         botrole = discord.utils.get(ctx.guild.roles,name="TEA BOT")
         if role.position > botrole.position:
             await ctx.send(f'{emote.error} | My Role Is Not Above The Mentioned Role, Please Put My Role Above The Mentioned Role And Try Again')
@@ -111,7 +118,6 @@ class BotSettings(commands.Cog):
         await ctx.send(f'{emote.tick} | Successfully Set Autorole For Bots To {role.name}')
 
     @config.command(name='toggle')
-    @is_bot_setuped()
     @commands.has_permissions(manage_guild=True)
     async def config_toggle(self, ctx,*, args):
         """
@@ -123,6 +129,9 @@ class BotSettings(commands.Cog):
             `autorole-bot` - turn on/off autorole for bot
             `automeme` - turn on/off automeme
         """
+        data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
+        if data == False:
+            raise expectations.NotSetup
         data = await ctx.db.fetchrow('SELECT * FROM public.server_configs WHERE guild_id = $1',ctx.guild.id)
         
         if args == 'autorole':
