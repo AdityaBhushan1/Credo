@@ -1,5 +1,6 @@
 import discord
-from discord.ext import commands,menus
+from discord.ext import commands
+from .utils import menus
 import random
 import asyncio
 import datetime
