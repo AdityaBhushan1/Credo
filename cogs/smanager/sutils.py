@@ -1,11 +1,7 @@
-import asyncio
-import re
-from discord.ext import commands, menus
-import discord
-import string
-from ..utils import inputs,emote
+from discord.ext import commands
+import discord,string,re,asyncio
+from ..utils import inputs,emote,menus
 from datetime import datetime
-# import datetime
 from discord.ext.commands.converter import RoleConverter, TextChannelConverter
 
 class ScrimError(commands.CommandError):
