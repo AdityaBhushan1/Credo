@@ -233,6 +233,6 @@ class Context(commands.Context):
     
     async def error(self, message, delete_after=None):
         return await self.send(
-            embed=discord.Embed(description=message, color=discord.Color.red()),
+            embed=discord.Embed(description=message, color=self.bot.color),
             delete_after=delete_after,
         )
