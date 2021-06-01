@@ -15,38 +15,12 @@ import time
 import inspect
 from typing import Union, Optional
 import copy
-from discord.ext.menus import MenuError
 import asyncio
 import subprocess
+from .utils import menus
+from .utils.util import ActionReason,GlobalChannel
 
 
-class ActionReason(commands.Converter):
-    async def convert(self, ctx, argument):
-        ret = f'{ctx.author} (ID: {ctx.author.id}): {argument}'
-
-        if len(ret) > 512:
-            reason_max = 512 - len(ret) + len(argument)
-            raise commands.BadArgument(f'{error} | Reason is too long ({len(argument)}/{reason_max})')
-        return ret
-# class GlobalBlacklist(db.Table,table_name='global_blcklist'):
-#     entity_id = db.PrimaryKeyColumn(db.Integer(big=True))
-#     reason = db.Column(db.String)
-
-class GlobalChannel(commands.Converter):
-    async def convert(self, ctx, argument):
-        try:
-            return await commands.TextChannelConverter().convert(ctx, argument)
-        except commands.BadArgument:
-            # Not found... so fall back to ID + global lookup
-            try:
-                channel_id = int(argument, base=10)
-            except ValueError:
-                raise commands.BadArgument(f'Could not find a channel by ID {argument!r}.')
-            else:
-                channel = ctx.bot.get_channel(channel_id)
-                if channel is None:
-                    raise commands.BadArgument(f'Could not find a channel by ID {argument!r}.')
-                return channel
 class Owner_Commands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -295,7 +269,7 @@ class Owner_Commands(commands.Cog):
         pages = TeaPages(TextPageSource(text))
         try:
             await pages.start(ctx)
-        except MenuError as e:
+        except menus.MenuError as e:
             await ctx.send(str(e))
 
     @commands.command(hidden=True)
@@ -332,7 +306,9 @@ class Owner_Commands(commands.Cog):
             try:
                 em = discord.Embed(title = '📢 | Tea Bot Announcement | 📢',description=args,color=self.bot.color)
                 em.set_author(name="TierGamerpy#0252",icon_url='https://cdn.discordapp.com/avatars/749550694469599233/9abccc9f94b2f9e01cc2e788ff3c8cf0.webp?size=1024')
-                await channel.send(embed = em)
+                try:
+                    await channel.send(embed = em)
+                except:continue
             except:
                 pass
             else:
