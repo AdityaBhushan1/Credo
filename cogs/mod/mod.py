@@ -1,71 +1,26 @@
 from discord.ext import commands
 from disputils import BotConfirmation
-from ..utils import emote
+from ..utils import emote,util
 from collections import Counter, defaultdict
 import argparse, shlex,enum,asyncio,re,discord
 
 
-async def get_or_fetch_member(guild, member_id):
-        """Looks up a member in cache or fetches if not found.
-        Parameters
-            -----------
-            guild: Guild
-                The guild to look in.
-            member_id: int
-                The member ID to search for.
-            Returns
-            ---------
-            Optional[Member]
-                The member or None if not found.
-            """
 
-        member = guild.get_member(member_id)
-        if member is not None:
-            return member
-
-        members = await guild.query_members(limit=1, user_ids=[member_id], cache=True)
-        if not members:
-            return None
-        return members[0]
         
 
-def can_execute_action(ctx, user, target):
-    return user.id == ctx.bot.owner_id or \
-           user == ctx.guild.owner or \
-           user.top_role > target.top_role
+
 
 class Arguments(argparse.ArgumentParser):
     def error(self, message):
         raise RuntimeError(message)
-class ActionReason(commands.Converter):
-    async def convert(self, ctx, argument):
-        ret = f'{ctx.author} (ID: {ctx.author.id}): {argument}'
 
-        if len(ret) > 512:
-            reason_max = 512 - len(ret) + len(argument)
-            raise commands.BadArgument(f'{emote.error} | Reason is too long ({len(argument)}/{reason_max})')
-        return ret
 def safe_reason_append(base, to_append):
     appended = base + f'({to_append})'
     if len(appended) > 512:
         return base
     return appended
 
-class BannedMember(commands.Converter):
-    async def convert(self, ctx, argument):
-        if argument.isdigit():
-            member_id = int(argument, base=10)
-            try:
-                return await ctx.guild.fetch_ban(discord.Object(id=member_id))
-            except discord.NotFound:
-                raise commands.BadArgument(f'This member has not been banned before.') from None
 
-        ban_list = await ctx.guild.bans()
-        entity = discord.utils.find(lambda u: str(u.user) == argument, ban_list)
-
-        if entity is None:
-            raise commands.BadArgument('This member has not been banned before.')
-        return entity
 
 class plural:
     def __init__(self, value):
@@ -79,24 +34,7 @@ class plural:
         return f'{v} {singular}'
 
 
-class MemberID(commands.Converter):
-    async def convert(self, ctx, argument):
-        try:
-            m = await commands.MemberConverter().convert(ctx, argument)
-        except commands.BadArgument:
-            try:
-                member_id = int(argument, base=10)
-            except ValueError:
-                raise commands.BadArgument(f"{emote.error} | {argument} is not a valid member or member ID.") from None
-            else:
-                m = await get_or_fetch_member(ctx.guild, member_id)
-                if m is None:
-                    # hackban case
-                    return type('_Hackban', (), {'id': member_id, '__str__': lambda s: f'Member ID {s.id}'})()
 
-        if not can_execute_action(ctx, ctx.author, m):
-            raise commands.BadArgument(f'{emote.error} | You cannot do this action on this user due to role hierarchy.')
-        return m
 
 class Mod(commands.Cog, name='Moderation'):
     def __init__(self,bot):
@@ -106,7 +44,7 @@ class Mod(commands.Cog, name='Moderation'):
     @commands.command()
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
-    async def kick(self, ctx, member: discord.Member, *, reason:ActionReason = None):
+    async def kick(self, ctx, member: discord.Member, *, reason:util.ActionReason = None):
         '''
         Kicks A Member From Server
         '''
@@ -135,7 +73,7 @@ class Mod(commands.Cog, name='Moderation'):
     @commands.command()
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_guild_permissions(ban_members=True)
-    async def ban(self, ctx, member: MemberID, *, reason:ActionReason = None):
+    async def ban(self, ctx, member: util.MemberID, *, reason:util.ActionReason = None):
         '''
         Bans A Member From Server
         '''
@@ -315,7 +253,7 @@ class Mod(commands.Cog, name='Moderation'):
     @commands.command()
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_guild_permissions(manage_roles=True)
-    async def addrole(self,ctx,role: discord.Role, user:MemberID):
+    async def addrole(self,ctx,role: discord.Role, user:util.MemberID):
         '''
         Adds A Role To A Member
         '''
@@ -334,7 +272,7 @@ class Mod(commands.Cog, name='Moderation'):
     @commands.command()
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_guild_permissions(manage_roles=True)
-    async def removerole(self,ctx,role: discord.Role, user:MemberID):
+    async def removerole(self,ctx,role: discord.Role, user:util.MemberID):
         '''
         Removes A Role From A Member
         '''
@@ -405,7 +343,7 @@ class Mod(commands.Cog, name='Moderation'):
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
-    async def softban(self, ctx, member: discord.Member, *, reason: ActionReason = None):
+    async def softban(self, ctx, member: discord.Member, *, reason: util.ActionReason = None):
         """
         Soft bans a member from the server.
         """
@@ -427,7 +365,7 @@ class Mod(commands.Cog, name='Moderation'):
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
-    async def multiban(self, ctx, members: commands.Greedy[MemberID], *, reason: ActionReason = None):
+    async def multiban(self, ctx, members: commands.Greedy[util.MemberID], *, reason: util.ActionReason = None):
         """Bans multiple members from the server.
 
         This only works through banning via ID.
@@ -461,7 +399,7 @@ class Mod(commands.Cog, name='Moderation'):
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
-    async def multisoftban(self, ctx, members: commands.Greedy[MemberID], *, reason: ActionReason = None):
+    async def multisoftban(self, ctx, members: commands.Greedy[util.MemberID], *, reason: util.ActionReason = None):
         """Soft Bans multiple members from the server.
 
         This only works through banning via ID.
