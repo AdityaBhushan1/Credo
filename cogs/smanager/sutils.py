@@ -1,12 +1,19 @@
 from discord.ext import commands
 import discord,string,re,asyncio
-from ..utils import inputs,emote,menus
+from ..utils import emote,menus
 from datetime import datetime
 from discord.ext.commands.converter import RoleConverter, TextChannelConverter
 
 class ScrimError(commands.CommandError):
     pass
 
+async def safe_delete(message):
+    try:
+        await message.delete()
+    except (discord.Forbidden, discord.NotFound):
+        return False
+    else:
+        return True
 
 
 class CustomEditMenu(menus.Menu):
@@ -108,7 +115,7 @@ class CustomEditMenu(menus.Menu):
         try:
             name = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
         except asyncio.TimeoutError:
-            await self.ctx.send(f"{emote.error} | You failed to select a title in time. Try again!")
+            await self.ctx.error(f"{emote.error} | You failed to select a title in time. Try again!")
             self.stop()
             return 
         # if len(name) > 30:
@@ -116,8 +123,8 @@ class CustomEditMenu(menus.Menu):
         # elif len(name) < 5:
         #     raise ScrimError("The length of new name is too short.")
 
-        await inputs.safe_delete(msg)
-        await inputs.safe_delete(name)
+        await safe_delete(msg)
+        await safe_delete(name)
         await self.refresh_db()
         await self.ctx.db.execute('UPDATE smanager.custom_data SET custom_title = $1 WHERE c_id = $2',name.content,self.scrim['c_id'])
         await self.refresh()
@@ -134,39 +141,39 @@ class CustomEditMenu(menus.Menu):
         try:
             channel = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
         except asyncio.TimeoutError:
-            await self.ctx.send(f"{emote.error} | You failed to select a channel in time. Try again!")
+            await self.ctx.error(f"{emote.error} | You failed to select a channel in time. Try again!")
             self.stop()
             return 
 
         else:
             if len(channel.channel_mentions) == 0:
-                await self.ctx.send(f'{emote.error} | Thats Not A Channel')
+                await self.ctx.error(f'{emote.error} | Thats Not A Channel')
                 self.stop()
                 return 
 
             try:
                 converted_channel = await TextChannelConverter().convert(self.ctx, channel.content)
             except:
-                await self.ctx.send(f'{emote.error} | Thats Not A Channel')
+                await self.ctx.error(f'{emote.error} | Thats Not A Channel')
                 self.stop()
                 return 
 
             if not converted_channel.permissions_for(self.ctx.me).read_messages:
-                await self.ctx.send(
+                await self.ctx.error(
                 f"{emote.error} | Unfortunately, I don't have read messages permissions in {channel.mention}."
                 )
                 self.stop()
                 return
             
             if not converted_channel.permissions_for(self.ctx.me).send_messages:
-                await self.ctx.send(
+                await self.ctx.error(
                 f"{emote.error} | Unfortunately, I don't have send messages permissions in {channel.mention}."
                 )
                 self.stop()
                 return
 
-        await inputs.safe_delete(msg)
-        await inputs.safe_delete(channel)
+        await safe_delete(msg)
+        await safe_delete(channel)
         await self.refresh_db()
         await self.ctx.db.execute('UPDATE smanager.custom_data SET reg_ch = $1 WHERE c_id = $2',converted_channel.id,self.scrim['c_id'])
         await self.refresh()
@@ -179,39 +186,39 @@ class CustomEditMenu(menus.Menu):
             channel = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
             
         except asyncio.TimeoutError:
-            await self.ctx.send(f"{emote.error} | You failed to select a channel in time. Try again!")
+            await self.ctx.error(f"{emote.error} | You failed to select a channel in time. Try again!")
             self.stop()
             return 
 
         else:
             if len(channel.channel_mentions) == 0:
-                await self.ctx.send(f'{emote.error} | Thats Not A Channel')
+                await self.ctx.error(f'{emote.error} | Thats Not A Channel')
                 self.stop()
                 return 
 
             try:
                 converted_channel = await TextChannelConverter().convert(self.ctx, channel.content)
             except:
-                await self.ctx.send(f'{emote.error} | Thats Not A Channel')
+                await self.ctx.error(f'{emote.error} | Thats Not A Channel')
                 self.stop()
                 return 
 
             if not converted_channel.permissions_for(self.ctx.me).read_messages:
-                await self.ctx.send(
+                await self.ctx.error(
                 f"{emote.error} | Unfortunately, I don't have read messages permissions in {channel.mention}."
                 )
                 self.stop()
                 return
             
             if not converted_channel.permissions_for(self.ctx.me).send_messages:
-                await self.ctx.send(
+                await self.ctx.error(
                 f"{emote.error} | Unfortunately, I don't have send messages permissions in {channel.mention}."
                 )
                 self.stop()
                 return
 
-        await inputs.safe_delete(msg)
-        await inputs.safe_delete(channel)
+        await safe_delete(msg)
+        await safe_delete(channel)
         await self.refresh_db()
         await self.ctx.db.execute('UPDATE smanager.custom_data SET slotlist_ch = $1 WHERE c_id = $2',converted_channel.id,self.scrim['c_id'])
         await self.refresh()
@@ -228,24 +235,25 @@ class CustomEditMenu(menus.Menu):
         try:
             role = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
         except asyncio.TimeoutError:
-            await self.ctx.send(f"{emote.error} | You failed to select a role in time. Try again!")
+            await self.ctx.error(f"{emote.error} | You failed to select a role in time. Try again!")
             self.stop()
             return
 
         else:
             if len(role.role_mentions) == 0:
-                await self.ctx.send(f'{emote.error} | Thats Not A Role')
+                await self.ctx.error(f'{emote.error} | Thats Not A Role')
                 self.stop()
                 return
             try:
                 converted_role = await RoleConverter().convert(self.ctx, role.content)
             except:
-                await self.ctx.send(f'{emote.error} | Thats Not A Role')
+                await self.ctx.error(f'{emote.error} | Thats Not A Role')
                 self.stop()
                 return
-
+            if converted_role.managed:
+                return await self.ctx.error(f"{emote.error} | Role is an integrated role and cannot be added manually.")
             if converted_role > self.ctx.me.top_role:
-                await self.ctx.send(
+                await self.ctx.error(
                     f"{emote.error} | The position of {converted_role.mention} is above my top role. So I can't give it to anyone.\nKindly move {self.ctx.me.top_role.mention} above {converted_role.mention} in Server Settings."
                 )
                 self.stop()
@@ -253,13 +261,13 @@ class CustomEditMenu(menus.Menu):
 
             if self.ctx.author.id != self.ctx.guild.owner_id:
                 if converted_role > self.ctx.author.top_role:
-                    await self.ctx.send(
+                    await self.ctx.error(
                         f"{emote.error} | The position of {converted_role.mention} is above your top role {self.ctx.author.top_role.mention}."
                     )
                     self.stop()
                     return
-        await inputs.safe_delete(msg)
-        await inputs.safe_delete(role)
+        await safe_delete(msg)
+        await safe_delete(role)
         await self.refresh_db()
         await self.ctx.db.execute('UPDATE smanager.custom_data SET correct_reg_role = $1 WHERE c_id = $2',converted_role.id,self.scrim['c_id'])
         await self.refresh()
@@ -279,17 +287,17 @@ class CustomEditMenu(menus.Menu):
         try:
             mentions = await self.bot.wait_for('message', timeout=120, check=self.check)
         except asyncio.TimeoutError:
-            await self.ctx.send(f"{emote.error} | You failed to select number of mentions requried in time. Try again!")
+            await self.ctx.error(f"{emote.error} | You failed to select number of mentions requried in time. Try again!")
             self.stop()
             return
 
         if not mentions.content.isdigit():
-            await self.ctx.send(f'{emote.error} | You Did Not Entered A Integer Please Try Agin By Running Same Command')
+            await self.ctx.error(f'{emote.error} | You Did Not Entered A Integer Please Try Agin By Running Same Command')
             self.stop()
             return
         int_mentions = int(mentions.content)
-        await inputs.safe_delete(msg)
-        await inputs.safe_delete(mentions)
+        await safe_delete(msg)
+        await safe_delete(mentions)
         await self.refresh_db()
         await self.ctx.db.execute('UPDATE smanager.custom_data SET num_correct_mentions = $1 WHERE c_id = $2',int_mentions,self.scrim['c_id'])
         await self.refresh()
@@ -307,21 +315,21 @@ class CustomEditMenu(menus.Menu):
         try:
             slots = await self.bot.wait_for('message', timeout=120, check=self.check)
         except asyncio.TimeoutError:
-            await self.ctx.send(f"{emote.error} | You failed to select number of slots. Try again!")
+            await self.ctx.error(f"{emote.error} | You failed to select number of slots. Try again!")
             self.stop()
             return
 
         if not slots.content.isdigit():
-            await self.ctx.send(f'{emote.error} | You Did Not Entered A Integer Please Try Agin By Running Same Command')
+            await self.ctx.error(f'{emote.error} | You Did Not Entered A Integer Please Try Agin By Running Same Command')
             self.stop()
             return
         int_slots = int(slots.content)
         if int_slots > 25:
-            await self.ctx.send(f'{emote.error} | You Entered Slots Number More Than `25` \n**Note: Maximum Nuber Of Slots Is `25`**')
+            await self.ctx.error(f'{emote.error} | You Entered Slots Number More Than `25` \n**Note: Maximum Nuber Of Slots Is `25`**')
             self.stop()
             return
-        await inputs.safe_delete(msg)
-        await inputs.safe_delete(slots)
+        await safe_delete(msg)
+        await safe_delete(slots)
         await self.ctx.db.execute('UPDATE smanager.custom_data SET num_slots = $1 WHERE c_id = $2',int_slots,self.scrim['c_id'])
         await self.refresh_db()
         await self.ctx.db.execute('UPDATE smanager.custom_data SET allowed_slots = $2 WHERE c_id = $3',self.scrims['num_slots'] - self.scrim['reserverd_slots'],self.scrim['c_id'])
@@ -339,13 +347,13 @@ class CustomEditMenu(menus.Menu):
         try:
             open_time = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
         except asyncio.TimeoutError:
-            await self.ctx.send(f"{emote.error} | Timeout, You have't responsed in time. Try again!")
+            await self.ctx.error(f"{emote.error} | Timeout, You have't responsed in time. Try again!")
             self.stop()
             return
         else:
             match = re.match(r"\d+:\d+", open_time.content)
             if not match:
-                await self.ctx.send(f'{emote.error} | Thats Not A Valid Time')
+                await self.ctx.error(f'{emote.error} | Thats Not A Valid Time')
                 self.stop()
                 return
             match = match.group(0) 
@@ -353,8 +361,8 @@ class CustomEditMenu(menus.Menu):
             str_time = f'{hour}:{minute}'
             converting = datetime.strptime(str_time,'%H:%M')
             final_time = converting.time()
-        await inputs.safe_delete(msg)
-        await inputs.safe_delete(open_time)
+        await safe_delete(msg)
+        await safe_delete(open_time)
         await self.refresh_db()
         await self.ctx.db.execute('UPDATE smanager.custom_data SET open_time = $1 WHERE c_id = $2',final_time,self.scrim['c_id'])
         await self.refresh()
@@ -371,21 +379,21 @@ class CustomEditMenu(menus.Menu):
         try:
             reserverd_slots = await self.bot.wait_for('message', timeout=120, check=self.check)
         except asyncio.TimeoutError:
-            await self.ctx.send(f"{emote.error} | You failed to select number of slots. Try again!")
+            await self.ctx.error(f"{emote.error} | You failed to select number of slots. Try again!")
             self.stop()
             return
 
         if not reserverd_slots.content.isdigit():
-            await self.ctx.send(f'{emote.error} | You Did Not Entered A Integer Please Try Agin By Running Same Command')
+            await self.ctx.error(f'{emote.error} | You Did Not Entered A Integer Please Try Agin By Running Same Command')
             self.stop()
             return
         int_reserverd_slots = int(reserverd_slots.content)
         if int_reserverd_slots > self.scrim['num_slots']:
-            await self.ctx.send(f'{emote.error} | You Entered Reserved Slots Number More Than Total Number Of Slots, it should be less than total num of slots ')
+            await self.ctx.error(f'{emote.error} | You Entered Reserved Slots Number More Than Total Number Of Slots, it should be less than total num of slots ')
             self.stop()
             return
-        await inputs.safe_delete(msg)
-        await inputs.safe_delete(reserverd_slots)
+        await safe_delete(msg)
+        await safe_delete(reserverd_slots)
         await self.ctx.db.execute('UPDATE smanager.custom_data SET reserverd_slots = $1 WHERE c_id = $2',int_reserverd_slots,self.scrim['c_id'])
         await self.refresh_db()
         await self.ctx.db.execute('UPDATE smanager.custom_data SET ,allowed_slots = $1 WHERE c_id = $3',self.scrim['num_slots'] - self.scrims['reserverd_slots'],self.scrim['c_id'])
@@ -420,7 +428,7 @@ class CustomEditMenu(menus.Menu):
     #         delete_after=True,
     #     )
 
-    #     await inputs.safe_delete(msg)
+    #     await safe_delete(msg)
     #     await self.update_scrim(open_role_id=role.id)
 
     @menus.button("⏹️")
