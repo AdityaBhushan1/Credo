@@ -1,7 +1,8 @@
 from .utils import formats,emote
 from .utils.paginitators import SimplePages
 
-from discord.ext import commands, menus
+from discord.ext import commands
+from .utils import menus
 import io
 import discord
 import asyncio
@@ -242,6 +243,7 @@ class Tags(commands.Cog):
     @suggest_box()
     async def tag(self, ctx, *, name: TagName(lower=True)):
         """Allows you to tag text for later retrieval.
+        
         If a subcommand is not called, then this will search the tag database
         for the tag requested.
         """
