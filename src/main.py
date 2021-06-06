@@ -17,6 +17,7 @@ class TeaBot(commands.Bot):
             chunk_guilds_at_startup=False,
             allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, replied_user=True, users=True),
             activity=discord.Activity(type=discord.ActivityType.listening, name="*setup | *help"),
+            fetch_offline_members=True,
             **kwargs,
         )
         self.OWNER = config.owner
