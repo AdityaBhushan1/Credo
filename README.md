@@ -15,40 +15,43 @@
     ·
     <a href="https://discord.com/oauth2/authorize?client_id=782867672626364456&permissions=2147483647&scope=bot">Invite Tea Bot</a>
     <br/>
-      <a href="https://top.gg/bot/782867672626364456">
-  <img src="https://top.gg/api/widget/782867672626364456.svg" alt="TEA BOT" />
-  </a>
+
   </p>
 </p>
 
-## Seting Up Tea Bot
+# Seting Up Tea Bot
 ##### Note: The Given Steps Are For A Linux Machine If You Have Some Knowledege Of Programming Or Linux So You Can Create A Virual Env By Your Self
-### Step1
-Create A Virtual Enviroment, To Create A Virual Enviroment [Click Here](https://www.liquidweb.com/kb/creating-virtual-environment-ubuntu-16-04/). And Then Activate The Virtual ENV.
+## Step 1
+#### Create A Virtual Enviroment:
+##### 1. Open Terminal In You Cloned Folder
+##### 2. Run This In Your Terminal `curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3`
+##### 3. Run `poetry install`
+##### 4. Activate Virtual Env By Running `poetry shell`
 
-### Step2
-Now Go Inside The Bot Directory And Run This Command In You Terminal `sudo pip3 install -r requirement.txt`
+## Step 2
+#### Entring All The Crendentials:
+##### Now Fill Out All Details Inside `ex_config.py`
+##### 2. Now Rename `ex_config.py` -> `config.py`
 
-### Step3
-Now Change Your Directory To This `cd cogs/utils/modules/discord-ext-menus` And Run This Command `sudo pip3 install discord_ext_menus-0.1-py3-none-any.whl`
+## Step 3
+#### Seting Up Data Base:
+##### 1. Open Terminal And Connect To Your Postgres User In PSQL In Your Terminal
+##### 2. Run This `CREATE DATABASE teabotdb;` To Create Db For Bot
+##### 3. Then Change Database TO `teabotdb` In PSQL 
+##### 4. Then Open `schemas.sql` And Then Run All The Command In That File.
 
-### Step4
-Come Back To Bots Parent Direcotry And Fill Out All The Details In `ex_config.py` After Filling Up The Details Rename The File `ex_config.py` to `config.py`
+## Step 4
+#### Running The Bot:
+##### Now Run This Command `./run.sh`
 
-### Setp5
-Open Terminal And COnnect To Your Postgres User In PSQL In Your Terminal And Run This `CREATE DATABASE teabotdb;` Then Open `schemas.sql` And Then Change Database TO `teabotdb` In PSQL And Then Run All The Command In That File.
-
-### Step6
-Now Run This Command `./run.sh`
-
-### You Have Succefulluy Setuped The Bot
+#### You Have Succefulluy Setuped The Bot
 
 ## Note: 
 I would prefer if you don't run an instance of my bot. Just [`Invite The Bot`](https://discord.com/oauth2/authorize?client_id=782867672626364456&permissions=2147483647&scope=bot) on your server. The source here is provided for educational purposes for discord.py.
 
 <!-- CONTRIBUTION -->
 
-## How do I contribute?
+# How do I contribute?
 
 If you are looking forward to contribute to the project, we welcome you. kindly open an issue first for discussion.
 It's also a good option to join the [`Support Server`](https://discord.gg/aBM5xz6) and get into touch with anyone having `@Tea Bot Developer` role.
