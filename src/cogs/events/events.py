@@ -6,10 +6,6 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        for guild in self.bot.guilds:
-            await guild.chunk()
-        print(f"-------------------------------------")
-        print(f"Succefully Chunked Guilds")
         print(f"-------------------------------------")
         print(f"Logging In...........................")
         print(f"Logged In as: {self.bot.user.name}({self.bot.user.id})")
