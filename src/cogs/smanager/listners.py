@@ -33,34 +33,32 @@ class SmanagerListeners(commands.Cog):
         if "teabot-sm-banned" in [role.name for role in message.author.roles]:
             if scrims['auto_delete_on_reject'] == True:
                 self.bot.loop.create_task(delete_denied_message(message))
-                self.bot.dispatch("deny_reg",message,"baned_from_scrims",False)
                 return
-            self.bot.dispatch("deny_reg",message,"baned_from_scrims",True)
             return
 
         if scrims['is_running'] == False:
             if scrims['auto_delete_on_reject'] == True:
                 self.bot.loop.create_task(delete_denied_message(message))
-            await message.reply(f'{emote.error} | Registration Has Not Opend Yet',delete_after=10)
-            return
+            return await message.reply(f'{emote.error} | Registration Has Not Opend Yet',delete_after=10)
+            
 
         mentions = len([mem for mem in message.mentions])
         if mentions == 0 or mentions < scrims['num_correct_mentions']:
             if scrims['auto_delete_on_reject'] == True:
                 self.bot.loop.create_task(delete_denied_message(message))
-                self.bot.dispatch("deny_reg",message,"insufficient_mentions",False)
+                self.bot.dispatch("deny_reg",message,"insufficient_mentions")
                 return
-            self.bot.dispatch("deny_reg",message,"insufficient_mentions",True)
-            return
+            return self.bot.dispatch("deny_reg",message,"insufficient_mentions")
+            
 
         for mem in message.mentions:
             if mem.bot:
                 if scrims['auto_delete_on_reject'] == True:
                     self.bot.loop.create_task(delete_denied_message(message))
-                    self.bot.dispatch("deny_reg",message,"mentioned_bot",False)
+                    self.bot.dispatch("deny_reg",message,"mentioned_bot")
                     return
-                self.bot.dispatch("deny_reg",message,"mentioned_bot",True)
-                return
+                return self.bot.dispatch("deny_reg",message,"mentioned_bot")
+                
 
         team_name = re.search(r"team.*", message.content.lower())
         if team_name is None:
@@ -73,10 +71,10 @@ class SmanagerListeners(commands.Cog):
         if team_name in self.scrim_data[scrims['c_id']]["team_name"]:
             if scrims['auto_delete_on_reject'] == True:
                 self.bot.loop.create_task(delete_denied_message(message))
-                self.bot.dispatch("deny_reg",message,"allready_registerd",False)
+                self.bot.dispatch("deny_reg",message,"allready_registerd")
                 return
-            self.bot.dispatch("deny_reg",message,"allready_registerd",True)
-            return
+            return self.bot.dispatch("deny_reg",message,"allready_registerd")
+            
 
         self.scrim_data[scrims['c_id']]['counter'] = self.scrim_data[scrims['c_id']]['counter'] - 1
 
@@ -191,7 +189,7 @@ class SmanagerListeners(commands.Cog):
         await ch.send(embed = em)
 
     @commands.Cog.listener()
-    async def on_deny_reg(self,message,type,addreact):
+    async def on_deny_reg(self,message,type,addreact=True):
         if type == "insufficient_mentions":
             await message.reply('You Did Not Mentioned Correct Number Of Peoples',delete_after=10)
             self.bot.dispatch("deny_reg_logs",f"Reagistration For {message.author}'s Team Has Been Dnied Due To Insufficient Mentions",message.guild.id)
