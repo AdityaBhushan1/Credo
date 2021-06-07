@@ -51,7 +51,7 @@ class SmanagerListeners(commands.Cog):
             return self.bot.dispatch("deny_reg",message,"insufficient_mentions")
         else:
             for mem in message.mentions:
-                if mem.bot in message.mention:
+                if mem.bot in message.mentions:
                     if scrims['auto_delete_on_reject'] == True:
                         self.bot.loop.create_task(delete_denied_message(message))
                         self.bot.dispatch("deny_reg",message,"mentioned_bot")
