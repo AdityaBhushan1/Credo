@@ -4,12 +4,6 @@ from ..utils import emote,util
 from collections import Counter, defaultdict
 import argparse, shlex,enum,asyncio,re,discord
 
-
-
-        
-
-
-
 class Arguments(argparse.ArgumentParser):
     def error(self, message):
         raise RuntimeError(message)
@@ -32,8 +26,6 @@ class plural:
         if abs(v) != 1:
             return f'{v} {plural}'
         return f'{v} {singular}'
-
-
 
 
 class Mod(commands.Cog, name='Moderation'):
@@ -439,7 +431,7 @@ class Mod(commands.Cog, name='Moderation'):
         return { 'Bot': count }
 
     async def _complex_cleanup_strategy(self, ctx, search):
-        prefixes = '*' # thanks startswith
+        prefixes = tuple(self.bot.get_guild_prefixes(ctx.guild))
 
         def check(m):
             return m.author == ctx.me or m.content.startswith(prefixes)
