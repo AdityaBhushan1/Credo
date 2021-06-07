@@ -82,7 +82,7 @@ extensions = [
     'cogs.image',
     'cogs.bot_settings',
     'cogs.tasks',
-    'cogs.smanager.smanager',
+    # 'cogs.smanager.smanager',
     'cogs.events.autoevents',
     'cogs.events.botevents'
 ]
