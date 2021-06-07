@@ -115,14 +115,14 @@ class SManager(commands.Cog):
             except:
                 return await ctx.send(embed= inncorrect_channel_mention)
             else:
-                if not fetched_slot_channel.permissions_for(self.ctx.me).read_messages:
-                    await self.ctx.error(
+                if not fetched_slot_channel.permissions_for(ctx.me).read_messages:
+                    await ctx.error(
                     f"{emote.error} | Unfortunately, I don't have read messages permissions in {fetched_slot_channel.mention}."
                     )
                     return
             
-                if not fetched_slot_channel.permissions_for(self.ctx.me).send_messages:
-                    await self.ctx.error(
+                if not fetched_slot_channel.permissions_for(ctx.me).send_messages:
+                    await ctx.error(
                     f"{emote.error} | Unfortunately, I don't have send messages permissions in {fetched_slot_channel.mention}."
                     )
 
@@ -147,14 +147,14 @@ class SManager(commands.Cog):
             except:
                 return await ctx.send(embed= inncorrect_channel_mention)
             else:
-                if not fetched_reg_channel.permissions_for(self.ctx.me).read_messages:
-                    await self.ctx.error(
+                if not fetched_reg_channel.permissions_for(ctx.me).read_messages:
+                    await ctx.error(
                     f"{emote.error} | Unfortunately, I don't have read messages permissions in {fetched_reg_channel.mention}."
                     )
                     return
             
-                if not fetched_reg_channel.permissions_for(self.ctx.me).send_messages:
-                    await self.ctx.error(
+                if not fetched_reg_channel.permissions_for(ctx.me).send_messages:
+                    await ctx.error(
                     f"{emote.error} | Unfortunately, I don't have send messages permissions in {fetched_reg_channel.mention}."
                     )
 
@@ -179,18 +179,18 @@ class SManager(commands.Cog):
             return await ctx.error(embed=inncorrect_role_mention)
         else:
             if fetched_succes_reg_role.managed:
-                return await self.ctx.error(f"{emote.error} | Role is an integrated role and cannot be added manually.")
-            if fetched_succes_reg_role > self.ctx.me.top_role:
-                await self.ctx.error(
-                    f"{emote.error} | The position of {fetched_succes_reg_role.mention} is above my top role. So I can't give it to anyone.\nKindly move {self.ctx.me.top_role.mention} above {fetched_succes_reg_role.mention} in Server Settings."
+                return await ctx.error(f"{emote.error} | Role is an integrated role and cannot be added manually.")
+            if fetched_succes_reg_role > ctx.me.top_role:
+                await ctx.error(
+                    f"{emote.error} | The position of {fetched_succes_reg_role.mention} is above my top role. So I can't give it to anyone.\nKindly move {ctx.me.top_role.mention} above {fetched_succes_reg_role.mention} in Server Settings."
                 )
                 self.stop()
                 return
 
-            if self.ctx.author.id != self.ctx.guild.owner_id:
-                if fetched_succes_reg_role > self.ctx.author.top_role:
-                    await self.ctx.error(
-                        f"{emote.error} | The position of {fetched_succes_reg_role.mention} is above your top role {self.ctx.author.top_role.mention}."
+            if ctx.author.id != ctx.guild.owner_id:
+                if fetched_succes_reg_role > ctx.author.top_role:
+                    await ctx.error(
+                        f"{emote.error} | The position of {fetched_succes_reg_role.mention} is above your top role {ctx.author.top_role.mention}."
                     )
                     self.stop()
                     return
