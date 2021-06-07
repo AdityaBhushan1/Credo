@@ -2,7 +2,7 @@ import discord,sys,traceback,asyncpg,jishaku,asyncio
 from discord.ext import commands
 from cogs.utils import context
 import config
-from cogs.utils.config import Config
+from cogs.utils.jsonreaders import Config
 
 
 intents = discord.Intents.default()
