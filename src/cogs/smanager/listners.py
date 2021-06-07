@@ -26,74 +26,74 @@ class SmanagerListeners(commands.Cog):
         if scrims['toggle'] == False:
             # print('false toogle')
             return
-        if message.author.bot or "teabot-smanger" in [role.name for role in message.author.roles]:
+        elif message.author.bot or "teabot-smanger" in [role.name for role in message.author.roles]:
             # print('bot,role')
             return
 
-        if "teabot-sm-banned" in [role.name for role in message.author.roles]:
+        elif "teabot-sm-banned" in [role.name for role in message.author.roles]:
             if scrims['auto_delete_on_reject'] == True:
                 self.bot.loop.create_task(delete_denied_message(message))
                 return
             return
 
-        if scrims['is_running'] == False:
+        elif scrims['is_running'] == False:
             if scrims['auto_delete_on_reject'] == True:
                 self.bot.loop.create_task(delete_denied_message(message))
             return await message.reply(f'{emote.error} | Registration Has Not Opend Yet',delete_after=10)
             
 
-        mentions = len([mem for mem in message.mentions])
-        if mentions == 0 or mentions < scrims['num_correct_mentions']:
+        
+        elif len([mem for mem in message.mentions]) == 0 or len([mem for mem in message.mentions]) < scrims['num_correct_mentions']:
             if scrims['auto_delete_on_reject'] == True:
                 self.bot.loop.create_task(delete_denied_message(message))
                 self.bot.dispatch("deny_reg",message,"insufficient_mentions")
                 return
             return self.bot.dispatch("deny_reg",message,"insufficient_mentions")
-            
+        else:
+            for mem in message.mentions:
+                if mem.bot in message.mention:
+                    if scrims['auto_delete_on_reject'] == True:
+                        self.bot.loop.create_task(delete_denied_message(message))
+                        self.bot.dispatch("deny_reg",message,"mentioned_bot")
+                        return
+                    return self.bot.dispatch("deny_reg",message,"mentioned_bot")
+                else:pass
 
-        for mem in message.mentions:
-            if mem.bot:
+            team_name = re.search(r"team.*", message.content.lower())
+            if team_name is None:
+                return f"{message.author}'s team"
+
+            team_name = re.sub(r"<@*#*!*&*\d+>|team|name|[^\w\s]", "", team_name.group()).strip()
+
+            team_name = f"Team {team_name.title()}" if team_name else f"{message.author}'s team"
+
+            if team_name in self.scrim_data[scrims['c_id']]["team_name"]:
                 if scrims['auto_delete_on_reject'] == True:
                     self.bot.loop.create_task(delete_denied_message(message))
-                    self.bot.dispatch("deny_reg",message,"mentioned_bot")
+                    self.bot.dispatch("deny_reg",message,"allready_registerd")
                     return
-                return self.bot.dispatch("deny_reg",message,"mentioned_bot")
+                return self.bot.dispatch("deny_reg",message,"allready_registerd")
+            else:
+
+                self.scrim_data[scrims['c_id']]['counter'] = self.scrim_data[scrims['c_id']]['counter'] - 1
+
+                self.scrim_data[scrims['c_id']]['team_name'].append(f"{team_name}")
+                if self.scrim_data[scrims['c_id']]['counter'] == 0:
+                    self.bot.dispatch("auto_close_reg",message.channel.id)
                 
 
-        team_name = re.search(r"team.*", message.content.lower())
-        if team_name is None:
-            return f"{message.author}'s team"
-
-        team_name = re.sub(r"<@*#*!*&*\d+>|team|name|[^\w\s]", "", team_name.group()).strip()
-
-        team_name = f"Team {team_name.title()}" if team_name else f"{message.author}'s team"
-
-        if team_name in self.scrim_data[scrims['c_id']]["team_name"]:
-            if scrims['auto_delete_on_reject'] == True:
-                self.bot.loop.create_task(delete_denied_message(message))
-                self.bot.dispatch("deny_reg",message,"allready_registerd")
-                return
-            return self.bot.dispatch("deny_reg",message,"allready_registerd")
-            
-
-        self.scrim_data[scrims['c_id']]['counter'] = self.scrim_data[scrims['c_id']]['counter'] - 1
-
-        self.scrim_data[scrims['c_id']]['team_name'].append(f"{team_name}")
-        if self.scrim_data[scrims['c_id']]['counter'] == 0:
-            self.bot.dispatch("auto_close_reg",message.channel.id)
-
-        role = discord.utils.get(message.guild.roles, id = scrims['correct_reg_role'])
-        try:
-            await message.author.add_roles(role)
-            # print('asssgined role')
-        except:
-            pass
-        # print('updated cache')
-        try:
-            await message.add_reaction(f'{emote.tick}')
-        except:
-            pass
-        self.bot.dispatch("correct_reg_logs",message,team_name)
+                role = discord.utils.get(message.guild.roles, id = scrims['correct_reg_role'])
+                try:
+                    await message.author.add_roles(role)
+                    # print('asssgined role')
+                except:
+                    pass
+                # print('updated cache')
+                try:
+                    await message.add_reaction(f'{emote.tick}')
+                except:
+                    pass
+                self.bot.dispatch("correct_reg_logs",message,team_name)
 
 
     @commands.Cog.listener()
