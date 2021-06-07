@@ -34,12 +34,13 @@ class RemoverRvents(commands.Cog):
             return
         else:
             pass
-        if not scrims_manager:
+        if scrims_manager['reg_ch'] == channel.id:
+            log_ch = discord.utils.get(channel.guild.channels, name='teabot-sm-logs')
+            await self.bot.db.execute('UPDATE smanager.custom_data SET toggle = $1 WHERE reg_ch = $2',False,channel.id)
+            await log_ch.send(f"{emote.error} | The Registration Cahnnel For `{scrims_manager['c_id']}` And Its Toggled Off Please Set New Cahnnel With Edit Commadn Then Toggle It On")
             return
         else:
-            await self.bot.db.execute('UPDATE smanager.custom_data SET toggle = $1 WHERE reg_ch = $2',False,channel.id)
-            log_ch = discord.utils.get(channel.guild.channels, name='teabot-sm-logs')
-            await log_ch.send(f"{emote.error} | The Registration Cahnnel For `{scrims_manager['c_id']}` And Its Toggled Off Please Set New Cahnnel With Edit Commadn Then Toggle It On")
+            pass
 
 
     @commands.Cog.listener()

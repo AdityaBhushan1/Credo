@@ -76,7 +76,7 @@ extensions = [
     'cogs.events.error',
     'cogs.events.events',
     'cogs.others',
-    # 'cogs.top',
+    'cogs.top',
     'cogs.help',
     'cogs.admin',
     'cogs.image',
