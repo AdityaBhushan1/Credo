@@ -3,6 +3,13 @@ from .utils import emote
 import discord
 from .utils.checks import is_bot_setuped
 from .utils import expectations
+
+class Prefix(commands.Converter):
+    async def convert(self, ctx, argument):
+        user_id = ctx.bot.user.id
+        if argument.startswith((f'<@{user_id}>', f'<@!{user_id}>')):
+            raise commands.BadArgument('That is a reserved prefix already in use.')
+        return argument
 class BotSettings(commands.Cog):
     """Handles the bot's configuration system.
 
@@ -18,6 +25,66 @@ class BotSettings(commands.Cog):
         """Handles configuration for the bot."""
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
+
+##########################################################################################################
+###========================================== Prefix Handling Commands ==================================#
+##########################################################################################################
+
+    @commands.group(name='prefix', invoke_without_command=True)
+    async def prefix(self, ctx):
+        """Manages the server's custom prefixes.
+        If called without a subcommand, this will list the currently set
+        prefixes.
+        """
+        prefixes = self.bot.get_guild_prefixes(ctx.guild)
+        del prefixes[1]
+        e = discord.Embed(title='Prefixes', colour=self.bot.color)
+        e.set_footer(text=f'{len(prefixes)} prefixes')
+        e.description = '\n'.join(f'{index}. {elem}' for index, elem in enumerate(prefixes, 1))
+        await ctx.send(embed=e)
+
+    @prefix.command(name='add', ignore_extra=False)
+    @commands.has_permissions(manage_guild=True)
+    async def prefix_add(self, ctx, prefix: Prefix):
+        """Adds A New Prefix To The Server Prefixes.You Can Have Upto 10 Prefixes Per Guild
+        """
+
+        current_prefixes = self.bot.get_raw_guild_prefixes(ctx.guild.id)
+        current_prefixes.append(prefix)
+        try:
+            await self.bot.set_guild_prefixes(ctx.guild, current_prefixes)
+        except Exception as e:
+            await ctx.send(f'{emote.error} {e}')
+        else:
+            await ctx.send(emote.tick)
+
+    @prefix_add.error
+    async def prefix_add_error(self, ctx, error):
+        if isinstance(error, commands.TooManyArguments):
+            await ctx.send("You've given too many prefixes. Either quote it or only do it one by one.")
+
+    @prefix.command(name='remove', aliases=['delete'], ignore_extra=False)
+    @commands.has_permissions(manage_guild=True)
+    async def prefix_remove(self, ctx, prefix: Prefix):
+        """Removes A Custom Prefix From Your Guild
+        """
+
+        current_prefixes = self.bot.get_raw_guild_prefixes(ctx.guild.id)
+
+        if prefix == self.bot.defaultprefix:
+            return await ctx.error(f'{emote.error} | thats a reserved prefix')
+        try:
+            current_prefixes.remove(prefix)
+        except ValueError:
+            return await ctx.send(f'This Server do not have this prefix {prefix} registered.')
+
+        try:
+            await self.bot.set_guild_prefixes(ctx.guild, current_prefixes)
+        except Exception as e:
+            await ctx.send(f'{emote.error} {e}')
+        else:
+            await ctx.send(emote.tick)
+
 
 ##########################################################################################################
 ###====================================== Setup Etc Commands And Toggle Comamnds ========================#
