@@ -2,15 +2,24 @@ import discord,sys,traceback,asyncpg,jishaku,asyncio
 from discord.ext import commands
 from cogs.utils import context
 import config
+from cogs.utils.config import Config
 
 
 intents = discord.Intents.default()
 intents.members = True
 
+def get_prefix(bot, msg):
+    user_id = bot.user.id
+    base = [f'<@!{user_id}> ', f'<@{user_id}> ']
+    if msg.guild is None:
+        base.append(config.prefix)
+    else:
+        base.extend(bot.prefixes.get(msg.guild.id,[config.prefix]))
+    return base
 class TeaBot(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(
-            command_prefix=config.prefix,
+            command_prefix=get_prefix,
             intents=intents,
             strip_after_prefix=True,
             case_insensitive=True,
@@ -32,12 +41,30 @@ class TeaBot(commands.Bot):
         self.ksoft_api_key = config.ksoft_api_key
         self.tenor_apikey = config.tenor_apikey
         self.config = config
+        self.defaultprefix = config.prefix
         self.loop = asyncio.get_event_loop()
+        self.prefixes = Config('prefixes.json')
 
     async def process_commands(self, message):
         ctx = await self.get_context(message,cls=context.Context)
 
         await self.invoke(ctx)
+
+    def get_guild_prefixes(self, guild, *, local_inject=get_prefix):
+        proxy_msg = discord.Object(id=0)
+        proxy_msg.guild = guild
+        return local_inject(self, proxy_msg)
+
+    def get_raw_guild_prefixes(self, guild_id):
+        return self.prefixes.get(guild_id, [config.prefix])
+
+    async def set_guild_prefixes(self, guild, prefixes):
+        if len(prefixes) == 0:
+            await self.prefixes.put(guild.id, [])
+        elif len(prefixes) > 10:
+            raise RuntimeError('Cannot have more than 10 custom prefixes.')
+        else:
+            await self.prefixes.put(guild.id, sorted(set(prefixes), reverse=True))
 
 bot = TeaBot()
 
@@ -49,7 +76,7 @@ extensions = [
     'cogs.events.error',
     'cogs.events.events',
     'cogs.others',
-    'cogs.top',
+    # 'cogs.top',
     'cogs.help',
     'cogs.admin',
     'cogs.image',
