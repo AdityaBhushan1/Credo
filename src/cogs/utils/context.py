@@ -2,6 +2,7 @@ from discord.ext import commands
 import asyncio
 import discord
 import io
+from . import emote
 
 class _ContextDBAcquire:
     __slots__ = ('ctx', 'timeout')
@@ -233,6 +234,12 @@ class Context(commands.Context):
     
     async def error(self, message, delete_after=None):
         return await self.send(
-            embed=discord.Embed(description=message, color=self.bot.color),
+            embed=discord.Embed(description=f'{emote.error} | {message}', color=self.bot.color),
+            delete_after=delete_after,
+        )
+        
+    async def success(self, message, delete_after=None):
+        return await self.send(
+            embed=discord.Embed(description=f'{emote.tick} | {message}', color=self.bot.color),
             delete_after=delete_after,
         )
