@@ -30,7 +30,7 @@
 
 ## Step 2
 #### Entring All The Crendentials:
-##### Now Fill Out All Details Inside `ex_config.py`
+##### 1. Now Fill Out All Details Inside `ex_config.py`
 ##### 2. Now Rename `ex_config.py` -> `config.py`
 
 ## Step 3
@@ -42,8 +42,8 @@
 
 ## Step 4
 #### Running The Bot:
-##### brfore running create a file inside src folder named `prefixes.json` and `{}` put those brackets inside the file
-##### Now Run This Command `./run.sh`
+##### 1. brfore running create a file inside src folder named `prefixes.json` and `{}` put those brackets inside the file
+##### 2. Now Run This Command `./run.sh`
 
 #### You Have Succefulluy Setuped The Bot
 
