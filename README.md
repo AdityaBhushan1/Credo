@@ -19,8 +19,8 @@
   </p>
 </p>
 
-# Seting Up Tea Bot
-##### Note: The Given Steps Are For A Linux Machine If You Have Some Knowledege Of Programming Or Linux So You Can Create A Virual Env By Your Self
+# Setting Up Tea Bot
+##### Note: The Given Steps Are For A Linux Machine If You Have Some Knowledege Of Programming you can set it up for any other machine
 ## Step 1
 #### Create A Virtual Enviroment:
 ##### 1. Open Terminal In You Cloned Folder
@@ -29,12 +29,12 @@
 ##### 4. Activate Virtual Env By Running `poetry shell`
 
 ## Step 2
-#### Entring All The Crendentials:
+#### Entering All The Credentials:
 ##### 1. Now Fill Out All Details Inside `ex_config.py`
 ##### 2. Now Rename `ex_config.py` -> `config.py`
 
 ## Step 3
-#### Seting Up Data Base:
+#### Setting Up Data Base:
 ##### 1. Open Terminal And Connect To Your Postgres User In PSQL In Your Terminal
 ##### 2. Run This `CREATE DATABASE teabotdb;` To Create Db For Bot
 ##### 3. Then Change Database TO `teabotdb` In PSQL 
