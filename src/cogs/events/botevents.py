@@ -27,9 +27,6 @@ class RemoverRvents(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_remove(self,guild):
-        data = await self.bot.db.fetchval('SELECT is_server_premium FROM server_configs WHERE guild_id = $1',guild.id)
-        if data == True:
-            return
         await self.bot.execute('DELETE FROM public.brodcst WHERE guild_id = $1',guild.id)
         await self.bot.execute('DELETE FROM public.server_configs WHERE guild_id = $1',guild.id)
         await self.bot.execute('DELETE FROM smanager.tag_check WHERE guild_id = $1',guild.id)

@@ -7,3 +7,4 @@ src/cogs/events/__pycache__
 src/cogs/mod/__pycache__
 src/cogs/smanager/__pycache__
 src/cogs/utils/__pycache__
+src/prefixes.json
