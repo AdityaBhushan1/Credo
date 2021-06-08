@@ -10,34 +10,16 @@ class RemoverRvents(commands.Cog):
     async def on_guild_channel_delete(self,channel):
         record = await self.bot.db.fetchrow('SELECT * FROM public.server_configs WHERE guild_id = $1',channel.guild.id)
         brocast = await self.bot.db.fetchrow('SELECT * FROM public.brodcast WHERE guild_id = $1',channel.guild.id)
-        scrims_manager = await self.bot.db.fetchrow('SELECT * FROM smanager.custom_data WHERE reg_ch = $1',channel.id)
-        tag_check = await self.bot.db.fetchrow('SELECT * FROM smanager.tag_check WHERE guild_id = $1',channel.guild.id)
 
-        if tag_check['ch_id'] == channel.id:
-            await self.bot.db.execute('UPDATE smanager.tag_check SET toggle = $1 WHERE guild_id = $2',False,channel.guild.id)
-            return
-        else:
-            pass
         if record['automeme_channel_id'] == channel.id:
             await self.bot.db.execute('UPDATE public.server_configs SET automeme_channel_id = NULL automeme_toogle = $1 WHERE guild_id = $2',False,channel.guild.id)
             return
         else:
             pass
         
-        if record['autonsfw_channel_id'] == channel.id:
-            await self.bot.db.execute('UPDATE public.server_configs SET autonsfw_channel_id = NULL autonsfw_toogle = $1 WHERE guild_id = $2',False,channel.guild.id)
-            return
-        else:
-            pass
         if brocast['channel_id'] == channel.id:
             await self.bot.db.execute('DELETE FROM public.brodcst WHERE guild_id = $1',channel.guild.id)
-            return
-        else:
-            pass
-        if scrims_manager['reg_ch'] == channel.id:
-            log_ch = discord.utils.get(channel.guild.channels, name='teabot-sm-logs')
-            await self.bot.db.execute('UPDATE smanager.custom_data SET toggle = $1 WHERE reg_ch = $2',False,channel.id)
-            await log_ch.send(f"{emote.error} | The Registration Cahnnel For `{scrims_manager['c_id']}` And Its Toggled Off Please Set New Cahnnel With Edit Commadn Then Toggle It On")
+            await self.bot.db.execute('UPDATE public.server_configs SET is_bot_setuped = $1 WHERE guild_id = $2',False,channel.guild.id)
             return
         else:
             pass
@@ -52,9 +34,6 @@ class RemoverRvents(commands.Cog):
         await self.bot.execute('DELETE FROM public.server_configs WHERE guild_id = $1',guild.id)
         await self.bot.execute('DELETE FROM smanager.tag_check WHERE guild_id = $1',guild.id)
         await self.bot.execute('DELETE FROM smanager.custom_data WHERE guild_id = $1',guild.id)
-        await self.bot.execute('DELETE FROM plonks WHERE guild_id = $1',guild.id)
-        await self.bot.execute('DELETE FROM plonks WHERE guild_id = $1',guild.id)
-        await self.bot.execute('DELETE FROM command_config WHERE guild_id = $1',guild.id)
 
     @commands.Cog.listener()
     async def on_guild_join(self,guild):
