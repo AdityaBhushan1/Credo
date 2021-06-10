@@ -72,7 +72,7 @@ class BotSettings(commands.Cog):
         current_prefixes = self.bot.get_raw_guild_prefixes(ctx.guild.id)
 
         if prefix == self.bot.defaultprefix:
-            return await ctx.error(f'{emote.error} | thats a reserved prefix')
+            return await ctx.error(f'thats a reserved prefix')
         try:
             current_prefixes.remove(prefix)
         except ValueError:
