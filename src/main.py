@@ -82,6 +82,7 @@ extensions = [
     'cogs.bot_settings',
     'cogs.tasks',
     'cogs.smanager.smanager',
+    'cogs.smanager.tasks'
     'cogs.events.autoevents',
     'cogs.events.botevents'
 ]
