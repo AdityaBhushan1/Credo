@@ -289,5 +289,15 @@ class Owner_Commands(commands.Cog):
         delta = time.time() - start
         await ctx.send(f'Successfully sent to {success} channels (out of {len(to_send)}) in {delta:.2f}s.')
 
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def todo(self, ctx, *, args):
+        channel = self.bot.get_channel(800772432608100352)
+        em = discord.Embed(
+            title='TO-DO', description=f'{args}', color=discord.Colour.green())
+        await channel.send(embed=em)
+        # await ctx.message.delete()
+        await ctx.send(':thumbsup:')
+
 def setup(bot):
     bot.add_cog(Owner_Commands(bot))
