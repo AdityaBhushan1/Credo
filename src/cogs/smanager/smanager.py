@@ -11,16 +11,16 @@ from .listners import SmanagerListeners
 from .tasks import SmanagerTasks
 from .tag_check import TagCheckListners
 from ..utils import expectations
+from pytz import timezone
 
 
 
-
-class SManager(commands.Cog):
+class Esports(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
 
-    @commands.group(invoke_without_command = True)
+    @commands.group(invoke_without_command = True,aliases = ['s','sm','scirms-manager'])
     async def smanager(self,ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
@@ -117,13 +117,13 @@ class SManager(commands.Cog):
             else:
                 if not fetched_slot_channel.permissions_for(ctx.me).read_messages:
                     await ctx.error(
-                    f"{emote.error} | Unfortunately, I don't have read messages permissions in {fetched_slot_channel.mention}."
+                    f"Unfortunately, I don't have read messages permissions in {fetched_slot_channel.mention}."
                     )
                     return
             
                 if not fetched_slot_channel.permissions_for(ctx.me).send_messages:
                     await ctx.error(
-                    f"{emote.error} | Unfortunately, I don't have send messages permissions in {fetched_slot_channel.mention}."
+                    f"Unfortunately, I don't have send messages permissions in {fetched_slot_channel.mention}."
                     )
 
                     return
@@ -149,13 +149,13 @@ class SManager(commands.Cog):
             else:
                 if not fetched_reg_channel.permissions_for(ctx.me).read_messages:
                     await ctx.error(
-                    f"{emote.error} | Unfortunately, I don't have read messages permissions in {fetched_reg_channel.mention}."
+                    f"Unfortunately, I don't have read messages permissions in {fetched_reg_channel.mention}."
                     )
                     return
             
                 if not fetched_reg_channel.permissions_for(ctx.me).send_messages:
                     await ctx.error(
-                    f"{emote.error} | Unfortunately, I don't have send messages permissions in {fetched_reg_channel.mention}."
+                    f"Unfortunately, I don't have send messages permissions in {fetched_reg_channel.mention}."
                     )
 
                     return
@@ -179,10 +179,10 @@ class SManager(commands.Cog):
             return await ctx.error(embed=inncorrect_role_mention)
         else:
             if fetched_succes_reg_role.managed:
-                return await ctx.error(f"{emote.error} | Role is an integrated role and cannot be added manually.")
+                return await ctx.error(f"Role is an integrated role and cannot be added manually.")
             if fetched_succes_reg_role > ctx.me.top_role:
                 await ctx.error(
-                    f"{emote.error} | The position of {fetched_succes_reg_role.mention} is above my top role. So I can't give it to anyone.\nKindly move {ctx.me.top_role.mention} above {fetched_succes_reg_role.mention} in Server Settings."
+                    f"The position of {fetched_succes_reg_role.mention} is above my top role. So I can't give it to anyone.\nKindly move {ctx.me.top_role.mention} above {fetched_succes_reg_role.mention} in Server Settings."
                 )
                 self.stop()
                 return
@@ -190,7 +190,7 @@ class SManager(commands.Cog):
             if ctx.author.id != ctx.guild.owner_id:
                 if fetched_succes_reg_role > ctx.author.top_role:
                     await ctx.error(
-                        f"{emote.error} | The position of {fetched_succes_reg_role.mention} is above your top role {ctx.author.top_role.mention}."
+                        f"The position of {fetched_succes_reg_role.mention} is above your top role {ctx.author.top_role.mention}."
                     )
                     self.stop()
                     return
@@ -299,11 +299,14 @@ class SManager(commands.Cog):
             await ctx.send(embed = took_long)
             await final_embed.delete()
             return
-
+        
         if str(reaction.emoji) == '<:tick:820320509564551178>':
             final_changing_msg = await ctx.send(f'{emote.loading} | Setting Up Custom')
             async with ctx.db.acquire() as con:
                 custom_num = scrims_manager['custom_setuped'] + 1
+                is_registration_done_today = False
+                if reg_open_final_time <= datetime.now(timezone("Asia/Kolkata")).time():
+                    is_registration_done_today = True
                 await con.execute('''INSERT INTO smanager.custom_data (custom_num,
                 guild_id,
                 slotlist_ch,
@@ -314,11 +317,12 @@ class SManager(commands.Cog):
                 custom_title,
                 correct_reg_role,
                 open_time,
+                is_registeration_done_today,
                 allowed_slots) 
-                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)''',
+                VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)''',
                 custom_num,ctx.guild.id,fetched_slot_channel.id,fetched_reg_channel.id,int_converted_total_num_slots,
                 int_reserved_slots,int_minimum_mentions_for_reg,custom_name.content,
-                fetched_succes_reg_role.id, reg_open_final_time,allowed_slots)
+                fetched_succes_reg_role.id, reg_open_final_time,is_registration_done_today,allowed_slots)
                 await con.execute('UPDATE server_configs SET custom_setuped = $1 WHERE guild_id = $2',custom_num,ctx.guild.id)
                 custom_id = await con.fetchval('SELECT c_id FROM smanager.custom_data WHERE reg_ch = $1',fetched_reg_channel.id)
                 await final_changing_msg.edit(content=f'{emote.tick} | Successfully Setuped Custom ID = `{custom_id}`, Custom Number = `{custom_num}`')
@@ -874,8 +878,14 @@ class SManager(commands.Cog):
 
         self.bot.loop.create_task(delete_denied_message(msg, 30 * 60))
 
+####################################################################################################################
+#===================================================== Tournament Manager =========================================#
+####################################################################################################################
+
+
+
 def setup(bot):
-    bot.add_cog(SManager(bot))
+    bot.add_cog(Esports(bot))
     bot.add_cog(SmanagerListeners(bot))
     bot.add_cog(SmanagerTasks(bot))
     bot.add_cog(TagCheckListners(bot))
