@@ -89,6 +89,7 @@ class SmanagerTasks(commands.Cog):
 
     @tasks.loop(seconds = 30)
     async def auto_open(self):
+        print('entered autoopen')
         # sunday -----------------------------------
         if dt.date.today().isoweekday() == 7:
             data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND open_on_sunday = $5 AND allowed_slots != $6",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,True,0)
