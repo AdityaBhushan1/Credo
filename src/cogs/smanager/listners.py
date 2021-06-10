@@ -101,20 +101,37 @@ class SmanagerListeners(commands.Cog):
         scrims = await self.bot.db.fetchrow('SELECT * FROM smanager.custom_data WHERE reg_ch = $1',channel_id)
         guild = self.bot.get_guild(scrims['guild_id'])
         channel = self.bot.get_channel(channel_id)
-        overwrite = channel.overwrites_for(guild.default_role)
-        overwrite.send_messages = False
-        overwrite.view_channel = True
-        try:
-            await channel.set_permissions(guild.default_role, overwrite=overwrite)
-        except:
-            pass
-        message = scrims['close_message_embed']
-        embed = json.loads(message)
-        em = discord.Embed.from_dict(embed)
-        await channel.send(embed = em)
-        self.bot.dispatch("reg_closed_db_update",scrims)
-        self.bot.dispatch("reg_closed_logs",scrims['c_id'],scrims['custom_title'],scrims['custom_num'],scrims['guild_id'])
-        await self.bot.db.execute('UPDATE smanager.custom_data SET is_running = $1, is_registeration_done_today = $2 WHERE reg_ch = $3',False,True,channel.id)
+        if scrims['open_role'] == None:
+            overwrite = channel.overwrites_for(guild.default_role)
+            overwrite.send_messages = False
+            overwrite.view_channel = True
+            try:
+                await channel.set_permissions(guild.default_role, overwrite=overwrite)
+            except:
+                pass
+            message = scrims['close_message_embed']
+            embed = json.loads(message)
+            em = discord.Embed.from_dict(embed)
+            await channel.send(embed = em)
+            self.bot.dispatch("reg_closed_db_update",scrims)
+            self.bot.dispatch("reg_closed_logs",scrims['c_id'],scrims['custom_title'],scrims['custom_num'],scrims['guild_id'])
+            await self.bot.db.execute('UPDATE smanager.custom_data SET is_running = $1, is_registeration_done_today = $2 WHERE reg_ch = $3',False,True,channel.id)
+        else:
+            role = guild.get_role(scrims["open_role"])
+            overwrite = channel.overwrites_for(role)
+            overwrite.send_messages = False
+            overwrite.view_channel = True
+            try:
+                await channel.set_permissions(role, overwrite=overwrite)
+            except:
+                pass
+            message = scrims['close_message_embed']
+            embed = json.loads(message)
+            em = discord.Embed.from_dict(embed)
+            await channel.send(embed = em)
+            self.bot.dispatch("reg_closed_db_update",scrims)
+            self.bot.dispatch("reg_closed_logs",scrims['c_id'],scrims['custom_title'],scrims['custom_num'],scrims['guild_id'])
+            await self.bot.db.execute('UPDATE smanager.custom_data SET is_running = $1, is_registeration_done_today = $2 WHERE reg_ch = $3',False,True,channel.id)
 
 
     @commands.Cog.listener()
@@ -160,15 +177,27 @@ class SmanagerListeners(commands.Cog):
         await self.bot.db.execute(f'UPDATE smanager.custom_data SET is_running = $1,team_names = NULL WHERE reg_ch = $2',True,channel.id)
         data = await self.bot.db.fetchrow(f"SELECT * FROM smanager.custom_data WHERE reg_ch = $1",channel.id)
         guild = await self.bot.fetch_guild(data['guild_id'])
-        overwrite = channel.overwrites_for(guild.default_role)
-        overwrite.send_messages = True
-        overwrite.view_channel = True
+        if data['open_role'] == None:
+            overwrite = channel.overwrites_for(guild.default_role)
+            overwrite.send_messages = True
+            overwrite.view_channel = True
+            await channel.set_permissions(guild.default_role, overwrite=overwrite)
+            self.scrim_data[data['c_id']] = {"counter":data['allowed_slots'],"team_name":[]}
+            # print(self.scrim_data)
+            self.bot.dispatch("reg_ch_open_msg",channel_id)
+            self.bot.dispatch("reg_open_msg_logs",channel_id,guild.id)
+        else:
+            role = guild.get_role(data["open_role"])
+            overwrite = channel.overwrites_for(role)
+            overwrite.send_messages = True
+            overwrite.view_channel = True
+            self.scrim_data[data['c_id']] = {"counter":data['allowed_slots'],"team_name":[]}
+            # print(self.scrim_data)
+            await channel.set_permissions(role, overwrite=overwrite)
+            self.bot.dispatch("reg_ch_open_msg",channel_id)
+            self.bot.dispatch("reg_open_msg_logs",channel_id,guild.id)
 
-        self.scrim_data[data['c_id']] = {"counter":data['allowed_slots'],"team_name":[]}
-        print(self.scrim_data)
-        await channel.set_permissions(guild.default_role, overwrite=overwrite)
-        self.bot.dispatch("reg_ch_open_msg",channel_id)
-        self.bot.dispatch("reg_open_msg_logs",channel_id,guild.id)
+        
 
 
 ####################################################################################################################
@@ -186,7 +215,9 @@ class SmanagerListeners(commands.Cog):
         message = message.replace('<<mentions_required>>',f"{data['num_correct_mentions']}")
         embed = json.loads(message)
         em = discord.Embed.from_dict(embed)
-        await ch.send(embed = em)
+        guild = self.bot.get_guild(data['guild_id'])
+        role = guild.get_role(data["ping_role"])
+        await ch.send(content = role.mention if role else None ,embed=em,allowed_mentions=discord.AllowedMentions(roles=True))
 
     @commands.Cog.listener()
     async def on_deny_reg(self,message,type,addreact=True):
@@ -272,25 +303,25 @@ class SmanagerListeners(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel):
-        data = await self.bot.db.fetch(f"SELECT * FROM smanager.custom_data WHERE reg_ch = $1",channel.id)
+        data = await self.bot.db.fetchrow(f"SELECT * FROM smanager.custom_data WHERE reg_ch = $1",channel.id)
         if not data: pass
         else:
-            if channel.id == data['reg_ch']:
-                await self.bot.db.execute("UPDATE smanager.custom_data SET toggle = $1,reg_ch = NULL WHERE c_id = $2",False,data['c_id'])
+            if channel.id == int(data['reg_ch']):
+                await self.bot.db.execute("UPDATE smanager.custom_data SET toggle = $1 WHERE c_id = $2",False,data['c_id'])
                 if data['is_running'] == True:
                     await self.bot.db.execute("UPDATE smanager.custom_data SET is_running = $1,is_registeration_done_today = $2 WHERE c_id = $3 AND is_running = $4",False,True,data['c_id'],True)
                 else:
                     pass
                 log_channel = discord.utils.get(channel.guild.channels, name='teabot-sm-logs')
-                em = discord.Embed(description = f"The Regitration Channel For Scrims With Id `{data['c_id']}` Has Been Deleted And Scrims Is Toggled Off Kildy Set New Channel And Toggle It On",color = self.bot.color)
+                em = discord.Embed(description = f"The Regitration Channel For Scrims With Id `{data['c_id']}` Has Been Deleted And Scrims Is Toggled Off Kinldy Set New Channel And Toggle It On",color = self.bot.color)
                 await log_channel.send(embed=em)
             else:pass
 
-        slot_ch = await self.bot.db.fetch(f"SELECT * FROM smanager.tag_check WHERE ch_id = $1",channel.id)
+        slot_ch = await self.bot.db.fetchrow(f"SELECT * FROM smanager.tag_check WHERE ch_id = $1",channel.id)
 
         if not slot_ch:pass
         else:
-            if channel.id == slot_ch['ch_id']:
+            if channel.id == int(slot_ch['ch_id']):
                 await self.bot.dd.execute('DELETE FROM smanager.custom_data WHERE ch_id = $1',channel.id)
                 log_channel = discord.utils.get(channel.guild.channels, name='teabot-sm-logs')
                 em = discord.Embed(description = f"The Tag Check Channel Has Been Deleted Kindly Setup Tag Check Again With New Chann;",color = self.bot.color)
