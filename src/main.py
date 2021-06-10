@@ -79,7 +79,6 @@ extensions = [
     'cogs.top',
     'cogs.help',
     'cogs.admin',
-    'cogs.image',
     'cogs.bot_settings',
     'cogs.tasks',
     'cogs.smanager.smanager',
