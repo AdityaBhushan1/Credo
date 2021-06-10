@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS smanager.custom_data(
     num_correct_mentions INTEGER DEFAULT (1),
     custom_title character varying,
     correct_reg_role BIGINT,
+    ping_role BIGINT,
+    open_role BIGINT,
     open_time time without time zone,
     close_time time without time zone,
     -- autoclean_time time without time zone DEFAULT('00:15:00'),
