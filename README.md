@@ -42,7 +42,7 @@
 
 ## Step 4
 #### Running The Bot:
-##### 1. brfore running create a file inside src folder named `prefixes.json` and `{}` put those brackets inside the file
+##### 1. before running create a file inside src folder named `prefixes.json` and `{}` put those brackets inside the file
 ##### 2. Now Run This Command `./run.sh`
 
 #### You Have Succefulluy Setuped The Bot
