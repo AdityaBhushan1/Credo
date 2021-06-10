@@ -14,8 +14,6 @@ class Prefix(commands.Converter):
 
 class BotHelpPageSource(menus.ListPageSource):
     def __init__(self, help_command, commands):
-        # entries = [(cog, len(sub)) for cog, sub in commands.items()]
-        # entries.sort(key=lambda t: (t[0].qualified_name, t[1]), reverse=True)
         super().__init__(entries=sorted(commands.keys(), key=lambda c: c.qualified_name), per_page=6)
         self.commands = commands
         self.help_command = help_command
@@ -29,26 +27,19 @@ class BotHelpPageSource(menus.ListPageSource):
         if cog.description:
             short_doc = cog.description.split('\n', 1)[0] + '\n'
         else:
-            short_doc = f'No help found...\n'
+            short_doc = f'> No help found...\n'
 
         current_count = len(short_doc)
         ending_note = '+%d not shown'
-        ending_length = len(ending_note)
 
         page = []
         for command in commands:
-            value = f'`{command.name}`, '
+            value = f'`{self.prefix}{command.name}` '
             count = len(value) + 1 # The space
             if count + current_count < 800:
                 current_count += count
                 page.append(value)
             else:
-                # If we're maxed out then see if we can add the ending note
-                if current_count + ending_length + 1 > 800:
-                    # If we are, pop out the last element to make room
-                    page.pop()
-
-                # Done paginating so just exit
                 break
 
         if len(page) == len(commands):
@@ -61,17 +52,17 @@ class BotHelpPageSource(menus.ListPageSource):
 
     async def format_page(self, menu, cogs):
         prefix = menu.ctx.prefix
-        description = f'Use "{prefix}help command" for more info on a command.\n' \
-                    f'Use "{prefix}help category" for more info on a category.\n' \
-                    'For more help, join the official bot [Support server](https://discord.gg/YSJVbxj9nw)'
+        description = f'> Use "{prefix}help command" for more info on a command.\n' \
+                    f'> Use "{prefix}help category" for more info on a category.\n' \
+                    '> For more help, join the official bot [Support server](https://discord.gg/YSJVbxj9nw)'
 
-        embed = discord.Embed(title='Categories', description=description, colour=discord.Colour.green())
+        embed = discord.Embed(title='Bot Help Page', description=description, colour=discord.Colour.green())
 
         for cog in cogs:
             commands = self.commands.get(cog)
             if commands:
                 value = self.format_commands(cog, commands)
-                embed.add_field(name=cog.qualified_name, value=value, inline=True)
+                embed.add_field(name=cog.qualified_name, value=value, inline=False)
 
         maximum = self.get_max_pages()
         embed.set_footer(text=f'Page {menu.current_page + 1}/{maximum}')
@@ -86,11 +77,12 @@ class GroupHelpPageSource(menus.ListPageSource):
         self.description = self.group.description
 
     async def format_page(self, menu, commands):
-        embed = discord.Embed(title=self.title, description=self.description, colour=discord.Colour.green())
+        embed = discord.Embed(title=self.title, description=f'> {self.description}', colour=discord.Colour.green())
 
         for command in commands:
-            signature = f'{command.qualified_name} {command.signature}'
-            embed.add_field(name=signature, value=command.short_doc or f'No help given...', inline=False)
+            signature = f'`{self.prefix}{command.qualified_name} {command.signature}`'
+            embed.add_field(name=signature, value=f'> {command.short_doc}' or f'> No help given...', inline=False)
+            
 
         maximum = self.get_max_pages()
         if maximum > 1:
@@ -109,18 +101,18 @@ class HelpMenu(TeaPages):
 
         embed = discord.Embed(title='Using the bot', colour= 0x4ca64c)
         embed.title = 'Using the bot'
-        embed.description = 'Hello! Welcome to the help page.'
+        embed.description = '> Hello! Welcome to the tea bot help page.'
 
         entries = (
-            ('<argument>', 'This means the argument is **required**.'),
-            ('[argument]', 'This means the argument is **optional**.'),
-            ('[A|B]', 'This means that it can be **either A or B**.'),
-            ('[argument...]', 'This means you can have multiple arguments.\n' \
-                            'Now that you know the basics, it should be noted that...\n' \
-                            '**You do not type in the brackets!**')
+            ('<argument>', '> This means the argument is **required**.'),
+            ('[argument]', '> This means the argument is **optional**.'),
+            ('[A|B]', '> This means that it can be **either A or B**.'),
+            ('[argument...]', '> This means you can have multiple arguments.\n' \
+                            '> Now that you know the basics, it should be noted that...\n' \
+                            '> **You do not type in the brackets!**')
         )
 
-        embed.add_field(name='How do I use this bot?', value='Reading the bot signature is pretty simple.')
+        embed.add_field(name='How do I use this bot?', value='> Reading the bot signature is pretty simple.')
 
         for name, value in entries:
             embed.add_field(name=name, value=value, inline=False)
@@ -184,9 +176,9 @@ class PaginatedHelpCommand(commands.HelpCommand):
     def common_command_formatting(self, embed_like, command):
         embed_like.title = self.get_command_signature(command)
         if command.description:
-            embed_like.description = f'{command.description}\n\n{command.help}'
+            embed_like.description = f'{command.description}\n\n> {command.help}'
         else:
-            embed_like.description = command.help or f'No help found...'
+            embed_like.description = f'> No help found...'
         
     async def send_command_help(self, command):
         # No pagination necessary for a single command.
