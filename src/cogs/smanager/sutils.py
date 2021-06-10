@@ -43,8 +43,22 @@ class CustomEditMenu(menus.Menu):
 
         guild = self.bot.get_guild(scrim['guild_id'])
         role = discord.utils.get(guild.roles, id = scrim['correct_reg_role'])
-        scrim_role = getattr(
+        if scrim['ping_role'] == None:
+            ping_role = None
+        else:
+            ping_role = discord.utils.get(guild.roles, id = scrim['ping_role'])
+        if scrim['open_role'] == None:
+            open_role = None
+        else:
+            open_role = discord.utils.get(guild.roles, id = scrim['open_role'])
+        correct_reg_role = getattr(
             role, "mention", "`Role Deleted!`"
+            )#
+        correct_ping_role = getattr(
+            ping_role, "mention", "`None`"
+            )#
+        correct_open_role = getattr(
+            open_role, "mention", "`None`"
             )#
 
         open_time = (scrim['open_time']).strftime("%I:%M %p")
@@ -67,7 +81,7 @@ class CustomEditMenu(menus.Menu):
             "Custom Name": f"`{scrim['custom_title']}`",
             "Registration Channel": registration_channel,
             "Slotlist Channel": slotlist_channel,
-            "Role": scrim_role,
+            "Role": correct_reg_role,
             "Mentions": f"`{scrim['num_correct_mentions']:,}`",
             "Slots": f"`{scrim['num_slots']:,}`",
             "Open Time": f"`{open_time}`",
@@ -76,7 +90,9 @@ class CustomEditMenu(menus.Menu):
             "Auto Slotlist Send":  f"{reactions('auto_slot_list_send')}",
             "Auto Close Time":f"{close_time}",
             # "Auto Clean Time":f"{autoclean_time}",
-            "Auto Delete Denyied Messages": f"{reactions('auto_delete_on_reject')}"
+            "Auto Delete Denyied Messages": f"{reactions('auto_delete_on_reject')}",
+            "Ping Role": correct_ping_role,
+            "Open Role": correct_open_role
         }
 
         for idx, (name, value) in enumerate(fields.items()):
@@ -124,7 +140,7 @@ class CustomEditMenu(menus.Menu):
         try:
             name = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
         except asyncio.TimeoutError:
-            await self.ctx.error(f"{emote.error} | You failed to select a title in time. Try again!")
+            await self.ctx.error(f"You failed to select a title in time. Try again!")
             self.stop()
             return 
         # if len(name) > 30:
@@ -150,20 +166,20 @@ class CustomEditMenu(menus.Menu):
         try:
             channel = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
         except asyncio.TimeoutError:
-            await self.ctx.error(f"{emote.error} | You failed to select a channel in time. Try again!")
+            await self.ctx.error(f"You failed to select a channel in time. Try again!")
             self.stop()
             return 
 
         else:
             if len(channel.channel_mentions) == 0:
-                await self.ctx.error(f'{emote.error} | Thats Not A Channel')
+                await self.ctx.error(f'Thats Not A Channel')
                 self.stop()
                 return 
 
             try:
                 converted_channel = await TextChannelConverter().convert(self.ctx, channel.content)
             except:
-                await self.ctx.error(f'{emote.error} | Thats Not A Channel')
+                await self.ctx.error(f'Thats Not A Channel')
                 self.stop()
                 return 
 
@@ -195,20 +211,20 @@ class CustomEditMenu(menus.Menu):
             channel = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
             
         except asyncio.TimeoutError:
-            await self.ctx.error(f"{emote.error} | You failed to select a channel in time. Try again!")
+            await self.ctx.error(f"You failed to select a channel in time. Try again!")
             self.stop()
             return 
 
         else:
             if len(channel.channel_mentions) == 0:
-                await self.ctx.error(f'{emote.error} | Thats Not A Channel')
+                await self.ctx.error(f'Thats Not A Channel')
                 self.stop()
                 return 
 
             try:
                 converted_channel = await TextChannelConverter().convert(self.ctx, channel.content)
             except:
-                await self.ctx.error(f'{emote.error} | Thats Not A Channel')
+                await self.ctx.error(f'Thats Not A Channel')
                 self.stop()
                 return 
 
@@ -244,23 +260,23 @@ class CustomEditMenu(menus.Menu):
         try:
             role = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
         except asyncio.TimeoutError:
-            await self.ctx.error(f"{emote.error} | You failed to select a role in time. Try again!")
+            await self.ctx.error(f"You failed to select a role in time. Try again!")
             self.stop()
             return
 
         else:
             if len(role.role_mentions) == 0:
-                await self.ctx.error(f'{emote.error} | Thats Not A Role')
+                await self.ctx.error(f'Thats Not A Role')
                 self.stop()
                 return
             try:
                 converted_role = await RoleConverter().convert(self.ctx, role.content)
             except:
-                await self.ctx.error(f'{emote.error} | Thats Not A Role')
+                await self.ctx.error(f'Thats Not A Role')
                 self.stop()
                 return
             if converted_role.managed:
-                return await self.ctx.error(f"{emote.error} | Role is an integrated role and cannot be added manually.")
+                return await self.ctx.error(f"Role is an integrated role and cannot be added manually.")
             if converted_role > self.ctx.me.top_role:
                 await self.ctx.error(
                     f"{emote.error} | The position of {converted_role.mention} is above my top role. So I can't give it to anyone.\nKindly move {self.ctx.me.top_role.mention} above {converted_role.mention} in Server Settings."
@@ -296,12 +312,12 @@ class CustomEditMenu(menus.Menu):
         try:
             mentions = await self.bot.wait_for('message', timeout=120, check=self.check)
         except asyncio.TimeoutError:
-            await self.ctx.error(f"{emote.error} | You failed to select number of mentions requried in time. Try again!")
+            await self.ctx.error(f"You failed to select number of mentions requried in time. Try again!")
             self.stop()
             return
 
         if not mentions.content.isdigit():
-            await self.ctx.error(f'{emote.error} | You Did Not Entered A Integer Please Try Agin By Running Same Command')
+            await self.ctx.error(f'You Did Not Entered A Integer Please Try Agin By Running Same Command')
             self.stop()
             return
         int_mentions = int(mentions.content)
@@ -324,17 +340,17 @@ class CustomEditMenu(menus.Menu):
         try:
             slots = await self.bot.wait_for('message', timeout=120, check=self.check)
         except asyncio.TimeoutError:
-            await self.ctx.error(f"{emote.error} | You failed to select number of slots. Try again!")
+            await self.ctx.error(f"You failed to select number of slots. Try again!")
             self.stop()
             return
 
         if not slots.content.isdigit():
-            await self.ctx.error(f'{emote.error} | You Did Not Entered A Integer Please Try Agin By Running Same Command')
+            await self.ctx.error(f'You Did Not Entered A Integer Please Try Agin By Running Same Command')
             self.stop()
             return
         int_slots = int(slots.content)
         if int_slots > 25:
-            await self.ctx.error(f'{emote.error} | You Entered Slots Number More Than `25` \n**Note: Maximum Nuber Of Slots Is `25`**')
+            await self.ctx.error(f'You Entered Slots Number More Than `25` \n**Note: Maximum Nuber Of Slots Is `25`**')
             self.stop()
             return
         await safe_delete(msg)
@@ -356,13 +372,13 @@ class CustomEditMenu(menus.Menu):
         try:
             open_time = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
         except asyncio.TimeoutError:
-            await self.ctx.error(f"{emote.error} | Timeout, You have't responsed in time. Try again!")
+            await self.ctx.error(f"Timeout, You have't responsed in time. Try again!")
             self.stop()
             return
         else:
             match = re.match(r"\d+:\d+", open_time.content)
             if not match:
-                await self.ctx.error(f'{emote.error} | Thats Not A Valid Time')
+                await self.ctx.error(f'Thats Not A Valid Time')
                 self.stop()
                 return
             match = match.group(0) 
@@ -388,17 +404,17 @@ class CustomEditMenu(menus.Menu):
         try:
             reserverd_slots = await self.bot.wait_for('message', timeout=120, check=self.check)
         except asyncio.TimeoutError:
-            await self.ctx.error(f"{emote.error} | You failed to select number of slots. Try again!")
+            await self.ctx.error(f"You failed to select number of slots. Try again!")
             self.stop()
             return
 
         if not reserverd_slots.content.isdigit():
-            await self.ctx.error(f'{emote.error} | You Did Not Entered A Integer Please Try Agin By Running Same Command')
+            await self.ctx.error(f'You Did Not Entered A Integer Please Try Agin By Running Same Command')
             self.stop()
             return
         int_reserverd_slots = int(reserverd_slots.content)
         if int_reserverd_slots > self.scrim['num_slots']:
-            await self.ctx.error(f'{emote.error} | You Entered Reserved Slots Number More Than Total Number Of Slots, it should be less than total num of slots ')
+            await self.ctx.error(f'You Entered Reserved Slots Number More Than Total Number Of Slots, it should be less than total num of slots ')
             self.stop()
             return
         await safe_delete(msg)
@@ -435,7 +451,7 @@ class CustomEditMenu(menus.Menu):
         try:
             close_time = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
         except asyncio.TimeoutError:
-            await self.ctx.error(f"{emote.error} | Timeout, You have't responsed in time. Try again!")
+            await self.ctx.error(f"Timeout, You have't responsed in time. Try again!")
             self.stop()
             return
         else:
@@ -449,7 +465,7 @@ class CustomEditMenu(menus.Menu):
             else:
                 match = re.match(r"\d+:\d+", close_time.content)
                 if not match:
-                    await self.ctx.error(f'{emote.error} | Thats Not A Valid Time')
+                    await self.ctx.error(f'Thats Not A Valid Time')
                     self.stop()
                     return
                 match = match.group(0) 
@@ -470,13 +486,13 @@ class CustomEditMenu(menus.Menu):
     #     try:
     #         auto_clean_time = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
     #     except asyncio.TimeoutError:
-    #         await self.ctx.error(f"{emote.error} | Timeout, You have't responsed in time. Try again!")
+    #         await self.ctx.error(f"Timeout, You have't responsed in time. Try again!")
     #         self.stop()
     #         return
     #     else:
     #         match = re.match(r"\d+:\d+", auto_clean_time.content)
     #         if not match:
-    #             await self.ctx.error(f'{emote.error} | Thats Not A Valid Time')
+    #             await self.ctx.error(f'Thats Not A Valid Time')
     #             self.stop()
     #             return
     #         match = match.group(0) 
@@ -498,6 +514,116 @@ class CustomEditMenu(menus.Menu):
         else:
             await self.ctx.db.execute('UPDATE smanager.custom_data SET auto_delete_on_reject = $1 WHERE c_id = $2',True,self.scrim['c_id'])
             await self.refresh()
+
+    @menus.button(emote.regional_indicator('M'))
+    async def change_ping_role(self, payload):
+        msg = await self.cembed("Which is the ping role? | **Reply With `None` To Set No Ping Role**")
+        # role = await inputs.role_input(
+        #     self.ctx,
+        #     self.check,
+        #     delete_after=True,
+        # )
+        try:
+            role = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
+        except asyncio.TimeoutError:
+            await self.ctx.error(f"You failed to select a role in time. Try again!")
+            self.stop()
+            return
+
+        else:
+            if role.content == 'None':
+                await safe_delete(msg)
+                await safe_delete(role)
+                await self.refresh_db()
+                await self.ctx.db.execute('UPDATE smanager.custom_data SET ping_role = NULL WHERE c_id = $1',self.scrim['c_id'])
+                await self.refresh()
+                return
+            if len(role.role_mentions) == 0:
+                await self.ctx.error(f'Thats Not A Role')
+                self.stop()
+                return
+            try:
+                converted_role = await RoleConverter().convert(self.ctx, role.content)
+            except:
+                await self.ctx.error(f'Thats Not A Role')
+                self.stop()
+                return
+            if converted_role.managed:
+                return await self.ctx.error(f"Role is an integrated role and cannot be added manually.")
+            if converted_role > self.ctx.me.top_role:
+                await self.ctx.error(
+                    f"{emote.error} | The position of {converted_role.mention} is above my top role. So I can't give it to anyone.\nKindly move {self.ctx.me.top_role.mention} above {converted_role.mention} in Server Settings."
+                )
+                self.stop()
+                return
+
+            if self.ctx.author.id != self.ctx.guild.owner_id:
+                if converted_role > self.ctx.author.top_role:
+                    await self.ctx.error(
+                        f"{emote.error} | The position of {converted_role.mention} is above your top role {self.ctx.author.top_role.mention}."
+                    )
+                    self.stop()
+                    return
+        await safe_delete(msg)
+        await safe_delete(role)
+        await self.refresh_db()
+        await self.ctx.db.execute('UPDATE smanager.custom_data SET ping_role = $1 WHERE c_id = $2',converted_role.id,self.scrim['c_id'])
+        await self.refresh()
+
+    @menus.button(emote.regional_indicator('N'))
+    async def change_open_role(self, payload):
+        msg = await self.cembed("Which is the open role for registration? | **Reply With `None` To Set Open Role To Everyone**")
+        # role = await inputs.role_input(
+        #     self.ctx,
+        #     self.check,
+        #     delete_after=True,
+        # )
+        try:
+            role = await self.ctx.bot.wait_for("message", check=self.check, timeout=120)
+        except asyncio.TimeoutError:
+            await self.ctx.error(f"You failed to select a role in time. Try again!")
+            self.stop()
+            return
+
+        else:
+            if role.content == 'None':
+                await safe_delete(msg)
+                await safe_delete(role)
+                await self.refresh_db()
+                await self.ctx.db.execute('UPDATE smanager.open_role SET open_role = NULL WHERE c_id = $1',self.scrim['c_id'])
+                await self.refresh()
+                return
+            if len(role.role_mentions) == 0:
+                await self.ctx.error(f'Thats Not A Role')
+                self.stop()
+                return
+            try:
+                converted_role = await RoleConverter().convert(self.ctx, role.content)
+            except:
+                await self.ctx.error(f'Thats Not A Role')
+                self.stop()
+                return
+            if converted_role.managed:
+                return await self.ctx.error(f"Role is an integrated role and cannot be added manually.")
+            if converted_role > self.ctx.me.top_role:
+                await self.ctx.error(
+                    f"{emote.error} | The position of {converted_role.mention} is above my top role. So I can't give it to anyone.\nKindly move {self.ctx.me.top_role.mention} above {converted_role.mention} in Server Settings."
+                )
+                self.stop()
+                return
+
+            if self.ctx.author.id != self.ctx.guild.owner_id:
+                if converted_role > self.ctx.author.top_role:
+                    await self.ctx.error(
+                        f"{emote.error} | The position of {converted_role.mention} is above your top role {self.ctx.author.top_role.mention}."
+                    )
+                    self.stop()
+                    return
+        await safe_delete(msg)
+        await safe_delete(role)
+        await self.refresh_db()
+        await self.ctx.db.execute('UPDATE smanager.custom_data SET open_role = $1 WHERE c_id = $2',converted_role.id,self.scrim['c_id'])
+        await self.refresh()
 
     @menus.button("⏹️")
     async def on_stop(self, payload):
