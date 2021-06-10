@@ -8,6 +8,7 @@ import traceback
 import re
 from PIL import ImageColor
 from . import expectations,emote
+from discord.ext.commands.converter import MessageConverter
 
 def traceback_maker(err, advance: bool = True):
     _traceback = ''.join(traceback.format_tb(err.__traceback__))
@@ -143,3 +144,72 @@ class GlobalChannel(commands.Converter):
                 if channel is None:
                     raise commands.BadArgument(f'Could not find a channel by ID {argument!r}.')
                 return channel
+
+class WrappedMessageConverter(MessageConverter):
+    """A converter that handles embed-suppressed links like <http://example.com>."""
+
+    async def convert(self, ctx: discord.ext.commands.Context, argument: str) -> discord.Message:
+        """Wrap the commands.MessageConverter to handle <> delimited message links."""
+        # It's possible to wrap a message in [<>] as well, and it's supported because its easy
+        if argument.startswith("[") and argument.endswith("]"):
+            argument = argument[1:-1]
+        if argument.startswith("<") and argument.endswith(">"):
+            argument = argument[1:-1]
+
+        return await super().convert(ctx, argument)
+
+
+from abc import ABC
+from discord import Message, Embed, TextChannel, errors
+from typing import Optional
+
+
+class Dialog(ABC):
+    def __init__(self, *args, **kwargs):
+        self._embed: Optional[Embed] = None
+        self.message: Optional[Message] = None
+        self.color: hex = kwargs.get("color") or kwargs.get("colour") or 0x4ca64c
+
+    async def _publish(self, channel: Optional[TextChannel], **kwargs) -> TextChannel:
+        if channel is None and self.message is None:
+            raise TypeError(
+                "Missing argument. You need to specify a target channel or message."
+            )
+
+        if channel is None:
+            try:
+                await self.message.edit(**kwargs)
+            except errors.NotFound:
+                self.message = None
+
+        if self.message is None:
+            self.message = await channel.send(**kwargs)
+
+        return self.message.channel
+
+    async def quit(self, text: str = None):
+        if text is None:
+            await self.message.delete()
+            self.message = None
+        else:
+            await self.display(text)
+            try:
+                await self.message.clear_reactions()
+            except errors.Forbidden:
+                pass
+
+    async def update(self, text: str, color: hex = None, hide_author: bool = False):
+        if color is None:
+            color = self.color
+
+        self._embed.colour = color
+        self._embed.title = text
+
+        if hide_author:
+            self._embed.set_author(name="")
+
+        await self.display(embed=self._embed)
+
+    async def display(self, text: str = None, embed: Embed = None):
+
+        await self.message.edit(content=text, embed=embed)
