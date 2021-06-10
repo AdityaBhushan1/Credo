@@ -1,41 +1,16 @@
-import discord
+import discord,random,asyncio,datetime,requests,re,requests,mystbin,time,zipfile,aiohttp,pyfiglet
 from discord.ext import commands
 from .utils import menus
-import random
-import asyncio
-import datetime
 from datetime import datetime, timedelta
-import requests
-import re
-from .utils.util import date
-import requests
-import mystbin
-import time
-from .utils import emote
+from .utils.util import date,WrappedMessageConverter
+from .utils import emote,times,formats
 from collections import Counter
-from .utils import times
-from .utils import formats
 from disputils import BotEmbedPaginator
-import zipfile
 from io import BytesIO
-import aiohttp
 from .utils.paginitators import TeaPages
-from discord.ext.commands.converter import MessageConverter
 from.utils.replies import *
-import pyfiglet
 
-class WrappedMessageConverter(MessageConverter):
-    """A converter that handles embed-suppressed links like <http://example.com>."""
 
-    async def convert(self, ctx: discord.ext.commands.Context, argument: str) -> discord.Message:
-        """Wrap the commands.MessageConverter to handle <> delimited message links."""
-        # It's possible to wrap a message in [<>] as well, and it's supported because its easy
-        if argument.startswith("[") and argument.endswith("]"):
-            argument = argument[1:-1]
-        if argument.startswith("<") and argument.endswith(">"):
-            argument = argument[1:-1]
-
-        return await super().convert(ctx, argument)
 
 def to_emoji(c):
     base = 0x1f1e6
@@ -113,11 +88,14 @@ class Utility(commands.Cog, name='Utility'):
         """Gives Avatar Of Memeber"""
         if user is None:
             user = ctx.message.author
-        em = discord.Embed(color=random.choice(color_list))
-        em.add_field(name=user.name, value=f'[Download]({user.avatar_url})')
-        em.set_image(url=user.avatar_url)
+        em = discord.Embed(color=self.bot.color)
+        em.description = f'[PNG]({user.avatar_url_as(format="png")}) | [JPEG]({user.avatar_url_as(format="jpeg")}) | [WEBP]({user.avatar_url_as(format="webp")})'
+        em.set_image(url=str(user.avatar_url_as(format='png')))
         em.set_footer(
             text=f'Requested by {ctx.author.name}', icon_url=ctx.author.avatar_url)
+        if user.is_avatar_animated():
+            em.description += f' | [GIF]({user.avatar_url_as(format="gif")})'
+            em.set_image(url=str(user.avatar_url_as(format='gif'))) 
         await ctx.send(embed=em)
 
     # server icon commands
@@ -130,37 +108,30 @@ class Utility(commands.Cog, name='Utility'):
             text=f'Requested by {ctx.author.name}', icon_url=ctx.author.avatar_url)
         await ctx.send(embed=em)
 
-    # pingcommand
-    @commands.command()
-    async def ping(self, ctx):
-        em = discord.Embed(
-            description=f"Pong! **{round(self.bot.latency*1000)}** ms", color=discord.Colour.green())
-        await ctx.send(embed=em)
-
-    @commands.command(aliases=['cs'])
+    @commands.command(aliases=['channel-stats'])
     async def channelstats(self, ctx):
         """Gives Stats Of Channel"""
         channel = ctx.channel
         embed = discord.Embed(
-            title=f"Stats for **{channel.name}**", description=f"{'Category: {}'.format(channel.category.name) if channel.category else 'This channel is not in a category'}", color=discord.Colour.green())
+            title=f"Channel Statistics for **{channel.name}**", description=f"{'Category: {}'.format(channel.category.name) if channel.category else 'This channel is not in a category'}", color=discord.Colour.green())
         embed.add_field(name="Channel Guild",
-                        value=ctx.guild.name, inline=False)
-        embed.add_field(name="Channel Id", value=channel.id, inline=False)
+                        value=ctx.guild.name)
+        embed.add_field(name="Channel Id", value=channel.id)
         embed.add_field(name="Channel Topic",
-                        value=f"{channel.topic if channel.topic else 'No topic.'}", inline=False)
+                        value=f"{channel.topic if channel.topic else 'No topic.'}")
         embed.add_field(name="Channel Position",
-                        value=channel.position, inline=False)
+                        value=channel.position)
         embed.add_field(name="Channel Slowmode Delay",
-                        value=channel.slowmode_delay, inline=False)
+                        value=channel.slowmode_delay)
         embed.add_field(name="Channel is nsfw?",
-                        value=channel.is_nsfw(), inline=False)
+                        value=channel.is_nsfw())
         embed.add_field(name="Channel is news?",
-                        value=channel.is_news(), inline=False)
+                        value=channel.is_news())
         embed.add_field(name="Channel Creation Time",
-                        value=channel.created_at, inline=False)
+                        value=channel.created_at.strftime("%I:%M %p"))
         embed.add_field(name="Channel Permissions Synced",
-                        value=channel.permissions_synced, inline=False)
-        embed.add_field(name="Channel Hash", value=hash(channel), inline=False)
+                        value=channel.permissions_synced)
+        embed.add_field(name="Channel Hash", value=hash(channel))
 
         await ctx.send(embed=embed)
 
@@ -400,27 +371,19 @@ class Utility(commands.Cog, name='Utility'):
         for page in paginator.pages:
             await channel.send(page)
 
-    @commands.command()
-    async def gen_pass(self, ctx):
-        """Generates A Password For You"""
-        url = "https://www.passwordrandom.com/query?command=password&format=json&count=1"
-        json_data = requests.get(url).json()
-        password = json_data['char'][0]
-        try:
-            await ctx.send('Your Passwor Has Been Sent Your DM')
-            await ctx.author.send(password)
-        except:
-            await ctx.send('Your Dm Is Closed Cannot Send Here')
+    # @commands.command()
+    # async def gen_pass(self, ctx):
+    #     """Generates A Password For You"""
+    #     url = "https://www.passwordrandom.com/query?command=password&format=json&count=1"
+    #     json_data = requests.get(url).json()
+    #     password = json_data['char'][0]
+    #     try:
+    #         await ctx.send('Your Passwor Has Been Sent Your DM')
+    #         await ctx.author.send(password)
+    #     except:
+    #         await ctx.send('Your Dm Is Closed Cannot Send Here')
 
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def todo(self, ctx, *, args):
-        channel = self.bot.get_channel(800772432608100352)
-        em = discord.Embed(
-            title='TO-DO', description=f'{args}', color=discord.Colour.green())
-        await channel.send(embed=em)
-        # await ctx.message.delete()
-        await ctx.send(':thumbsup:')
+    
 
     @commands.command(aliases=['hex_info'])
     async def color_info(self, ctx, hexvalue: str):
@@ -687,102 +650,102 @@ class Utility(commands.Cog, name='Utility'):
         embed.set_thumbnail(url=emoji.url)
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def encode_msg(self, ctx, *, message):
-        """Encodes You Message"""
-        try:
-            api = 'https://some-random-api.ml/base64?encode='+message
-            json_data = requests.get(api).json()
-            encoded_msg = json_data['base64']
-            if len(encoded_msg) > 1024:
-                mystbin_client = mystbin.Client()
-                paste = await mystbin_client.post(encoded_msg)
-                em = discord.Embed(
-                    description=f'The Encoded Msg Is More Than discord Character limt So I HAve Posted It On BIN \n [Click Me To See]({str(paste)})')
-                await ctx.send(embed=em)
-            else:
-                await ctx.send(f'Your Encoded Message For {message} Is : `{encoded_msg}`')
-        except:
-            await ctx.send('Cannot Incode Your Message')
+    # @commands.command()
+    # async def encode_msg(self, ctx, *, message):
+    #     """Encodes You Message"""
+    #     try:
+    #         api = 'https://some-random-api.ml/base64?encode='+message
+    #         json_data = requests.get(api).json()
+    #         encoded_msg = json_data['base64']
+    #         if len(encoded_msg) > 1024:
+    #             mystbin_client = mystbin.Client()
+    #             paste = await mystbin_client.post(encoded_msg)
+    #             em = discord.Embed(
+    #                 description=f'The Encoded Msg Is More Than discord Character limt So I HAve Posted It On BIN \n [Click Me To See]({str(paste)})')
+    #             await ctx.send(embed=em)
+    #         else:
+    #             await ctx.send(f'Your Encoded Message For {message} Is : `{encoded_msg}`')
+    #     except:
+    #         await ctx.send('Cannot Incode Your Message')
 
-    @commands.command()
-    async def decode_msg(self, ctx, *, encodedmsg):
-        """Decode You Encoded Message"""
-        try:
-            api = 'https://some-random-api.ml/base64?decode='+encodedmsg
-            json_data = requests.get(api).json()
-            decoded_msg = json_data['text']
-            if len(decoded_msg) > 1024:
-                mystbin_client = mystbin.Client()
-                paste = await mystbin_client.post(decoded_msg)
-                em = discord.Embed(
-                    description=f'The Decoded Msg Is More Than discord Character limt So I HAve Posted It On BIN \n [Click Me To See]({str(paste)})')
-                await ctx.send(embed=em)
-            else:
-                await ctx.send(f'Your Decoded Message For {encodedmsg} Is : {decoded_msg}')
-        except:
-            await ctx.send('Cannot Decode Your Message')
+    # @commands.command()
+    # async def decode_msg(self, ctx, *, encodedmsg):
+    #     """Decode You Encoded Message"""
+    #     try:
+    #         api = 'https://some-random-api.ml/base64?decode='+encodedmsg
+    #         json_data = requests.get(api).json()
+    #         decoded_msg = json_data['text']
+    #         if len(decoded_msg) > 1024:
+    #             mystbin_client = mystbin.Client()
+    #             paste = await mystbin_client.post(decoded_msg)
+    #             em = discord.Embed(
+    #                 description=f'The Decoded Msg Is More Than discord Character limt So I HAve Posted It On BIN \n [Click Me To See]({str(paste)})')
+    #             await ctx.send(embed=em)
+    #         else:
+    #             await ctx.send(f'Your Decoded Message For {encodedmsg} Is : {decoded_msg}')
+    #     except:
+    #         await ctx.send('Cannot Decode Your Message')
 
 
-    @commands.command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def dog_fact(self,ctx):
-        """Give You Random Fact Of Dog"""
-        api = 'https://some-random-api.ml/facts/dog'
-        json_data = requests.get(api).json()
-        fact = json_data['fact']
-        em = discord.Embed(title='Random Dog Fact',description=f'{fact}',color=ctx.author.color)
-        await ctx.send(embed=em)
+    # @commands.command()
+    # @commands.cooldown(1, 10, commands.BucketType.user)
+    # async def dog_fact(self,ctx):
+    #     """Give You Random Fact Of Dog"""
+    #     api = 'https://some-random-api.ml/facts/dog'
+    #     json_data = requests.get(api).json()
+    #     fact = json_data['fact']
+    #     em = discord.Embed(title='Random Dog Fact',description=f'{fact}',color=ctx.author.color)
+    #     await ctx.send(embed=em)
 
-    @commands.command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def cat_fact(self,ctx):
-        """Give You Random Fact Of Cat"""
-        api = 'https://some-random-api.ml/facts/cat'
-        json_data = requests.get(api).json()
-        fact = json_data['fact']
-        em = discord.Embed(title='Random Cat Fact',description=f'{fact}',color=ctx.author.color)
-        await ctx.send(embed=em)
+    # @commands.command()
+    # @commands.cooldown(1, 10, commands.BucketType.user)
+    # async def cat_fact(self,ctx):
+    #     """Give You Random Fact Of Cat"""
+    #     api = 'https://some-random-api.ml/facts/cat'
+    #     json_data = requests.get(api).json()
+    #     fact = json_data['fact']
+    #     em = discord.Embed(title='Random Cat Fact',description=f'{fact}',color=ctx.author.color)
+    #     await ctx.send(embed=em)
 
-    @commands.command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def panda_fact(self,ctx):
-        """Give You Random Fact Of Panda"""
-        api = 'https://some-random-api.ml/facts/panda'
-        json_data = requests.get(api).json()
-        fact = json_data['fact']
-        em = discord.Embed(title='Random Panda Fact',description=f'{fact}',color=ctx.author.color)
-        await ctx.send(embed=em)
+    # @commands.command()
+    # @commands.cooldown(1, 10, commands.BucketType.user)
+    # async def panda_fact(self,ctx):
+    #     """Give You Random Fact Of Panda"""
+    #     api = 'https://some-random-api.ml/facts/panda'
+    #     json_data = requests.get(api).json()
+    #     fact = json_data['fact']
+    #     em = discord.Embed(title='Random Panda Fact',description=f'{fact}',color=ctx.author.color)
+    #     await ctx.send(embed=em)
 
-    @commands.command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def fox_fact(self,ctx):
-        """Give You Random Fact Of Fox"""
-        api = 'https://some-random-api.ml/facts/fox'
-        json_data = requests.get(api).json()
-        fact = json_data['fact']
-        em = discord.Embed(title='Random Fox Fact',description=f'{fact}',color=ctx.author.color)
-        await ctx.send(embed=em)
+    # @commands.command()
+    # @commands.cooldown(1, 10, commands.BucketType.user)
+    # async def fox_fact(self,ctx):
+    #     """Give You Random Fact Of Fox"""
+    #     api = 'https://some-random-api.ml/facts/fox'
+    #     json_data = requests.get(api).json()
+    #     fact = json_data['fact']
+    #     em = discord.Embed(title='Random Fox Fact',description=f'{fact}',color=ctx.author.color)
+    #     await ctx.send(embed=em)
 
-    @commands.command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def bird_fact(self,ctx):
-        """Give You Random Fact Of Bird"""
-        api = 'https://some-random-api.ml/facts/bird'
-        json_data = requests.get(api).json()
-        fact = json_data['fact']
-        em = discord.Embed(title='Random Bird Fact',description=f'{fact}',color=ctx.author.color)
-        await ctx.send(embed=em)
+    # @commands.command()
+    # @commands.cooldown(1, 10, commands.BucketType.user)
+    # async def bird_fact(self,ctx):
+    #     """Give You Random Fact Of Bird"""
+    #     api = 'https://some-random-api.ml/facts/bird'
+    #     json_data = requests.get(api).json()
+    #     fact = json_data['fact']
+    #     em = discord.Embed(title='Random Bird Fact',description=f'{fact}',color=ctx.author.color)
+    #     await ctx.send(embed=em)
         
-    @commands.command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def kola_fact(self,ctx):
-        """Give You Random Fact Of Kola"""
-        api = 'https://some-random-api.ml/facts/koala'
-        json_data = requests.get(api).json()
-        fact = json_data['fact']
-        em = discord.Embed(title='Random Kola Fact',description=f'{fact}',color=ctx.author.color)
-        await ctx.send(embed=em)
+    # @commands.command()
+    # @commands.cooldown(1, 10, commands.BucketType.user)
+    # async def kola_fact(self,ctx):
+    #     """Give You Random Fact Of Kola"""
+    #     api = 'https://some-random-api.ml/facts/koala'
+    #     json_data = requests.get(api).json()
+    #     fact = json_data['fact']
+    #     em = discord.Embed(title='Random Kola Fact',description=f'{fact}',color=ctx.author.color)
+    #     await ctx.send(embed=em)
 
     async def say_permissions(self, ctx, member, channel):
         permissions = channel.permissions_for(member)
@@ -838,23 +801,23 @@ class Utility(commands.Cog, name='Utility'):
         member = ctx.guild.me
         await self.say_permissions(ctx, member, channel)
 
-    @commands.command()
-    async def genderize(self, ctx, name: str):
-        """Detremines Your Gender Through Name"""
-        api = f'https://api.genderize.io/?name={name}'
-        data = requests.get(api).json()
-        names = data['name']
-        gender = data['gender']
-        probability = data['probability']
+    # @commands.command()
+    # async def genderize(self, ctx, name: str):
+    #     """Detremines Your Gender Through Name"""
+    #     api = f'https://api.genderize.io/?name={name}'
+    #     data = requests.get(api).json()
+    #     names = data['name']
+    #     gender = data['gender']
+    #     probability = data['probability']
 
-        em = discord.Embed(title='Gender Determiner Through Name',
-                           color=ctx.author.color, inline=True)
-        em.add_field(name='Name: ', value=names, inline=True)
-        em.add_field(name='Gender: ', value=gender, inline=True)
-        em.add_field(name='Probability: ', value=probability, inline=True)
-        em.set_footer(
-            text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
-        await ctx.send(embed=em)    
+    #     em = discord.Embed(title='Gender Determiner Through Name',
+    #                        color=ctx.author.color, inline=True)
+    #     em.add_field(name='Name: ', value=names, inline=True)
+    #     em.add_field(name='Gender: ', value=gender, inline=True)
+    #     em.add_field(name='Probability: ', value=probability, inline=True)
+    #     em.set_footer(
+    #         text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url)
+    #     await ctx.send(embed=em)    
 
     @commands.command()
     @commands.guild_only()
@@ -951,6 +914,7 @@ class Utility(commands.Cog, name='Utility'):
         await ctx.send(embed=e)
 
     @commands.command()
+    @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     async def poll(self, ctx, *, question):
         """Interactively creates a poll with the following question.
@@ -997,6 +961,7 @@ class Utility(commands.Cog, name='Utility'):
             return await ctx.send(f'{emote.xmark} | Missing the question.')
 
     @commands.command()
+    @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     async def quickpoll(self, ctx, *questions_and_choices: str):
         """Makes a poll quickly.
@@ -1078,13 +1043,13 @@ class Utility(commands.Cog, name='Utility'):
         else:
             await ctx.message.add_reaction('📨')
 
-    @commands.command()
-    async def ascii(self,ctx, *, text):
-        if len(text) >= 16:
-            await ctx.send(f'{emote.error} | You Cannot Use More thank 16 Characteres')
-        result = pyfiglet.figlet_format(text)
+    # @commands.command()
+    # async def ascii(self,ctx, *, text):
+    #     if len(text) >= 16:
+    #         await ctx.send(f'{emote.error} | You Cannot Use More thank 16 Characteres')
+    #     result = pyfiglet.figlet_format(text)
 
-        embed = discord.Embed(description=f"```{result}```",color= self.bot.color)
-        await ctx.send(embed=embed)
+    #     embed = discord.Embed(description=f"```{result}```",color= self.bot.color)
+    #     await ctx.send(embed=embed)
 def setup(bot):
     bot.add_cog(Utility(bot))
