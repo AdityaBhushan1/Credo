@@ -887,5 +887,4 @@ class Esports(commands.Cog):
 def setup(bot):
     bot.add_cog(Esports(bot))
     bot.add_cog(SmanagerListeners(bot))
-    bot.add_cog(SmanagerTasks(bot))
     bot.add_cog(TagCheckListners(bot))
