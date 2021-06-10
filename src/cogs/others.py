@@ -5,6 +5,8 @@ import platform
 from .utils import emote
 from .utils import context as Context
 import os,inspect
+from collections import Counter
+from glob import glob
 
 
 
@@ -28,7 +30,7 @@ class Other(commands.Cog, name='Other'):
             latency = round(self.bot.latency*1000)
             e = discord.Embed(title = 'Tea Bot Status', description = f'Bot Name : `Tea Bot#9256`\n`Bot ID: 782875333144870932`',color = self.bot.color,inline=True)
             e.add_field(name = 'General', value = f'```py\nSevers: {serverCount}\nUsers: {memberCount}\n```',inline=True)
-            e.add_field(name = 'Other', value = f'```py\nPython Version: {pythonVersion}\nDiscord.Py Version: {dpyVersion}\nTea Bot Version: 3.3\nCommands: {commandscount}\nLatency: {latency}\n```',inline=True)
+            e.add_field(name = 'Other', value = f'```py\nPython Version: {pythonVersion}\nDiscord.Py Version: {dpyVersion}\nTea Bot Version: 3.4\nCommands: {commandscount}\nLatency: {latency}\n```',inline=True)
             e.add_field(name = 'System', value = f'```py\nOs: {operatingsystem}\nCPU Usage: {cpu_usage}%\nRam Usage: {ram_usage}%\n```',inline=True)
             e.add_field(name = 'Creator', value = f'```\nTier Gamer#0252 [749550694469599233]\n```',inline=True)
             e.set_thumbnail(url = self.bot.logo)
@@ -96,7 +98,33 @@ class Other(commands.Cog, name='Other'):
         final_url = f"<{source_url}/blob/main/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>"
         await ctx.send(final_url)
 
-    
+    @commands.command()
+    async def ping(self, ctx):
+        em = discord.Embed(
+            description=f"Pong! **{round(self.bot.latency*1000)}** ms", color=discord.Colour.green())
+        await ctx.send(embed=em)
+
+    @commands.command(aliases=["cs"])
+    async def codestats(self, ctx: Context):
+        """See the code statictics of tea bot."""
+        ctr = Counter()
+        for ctr["files"], f in enumerate(glob("./**/*.py", recursive=True)):
+            with open(f, encoding="UTF-8") as fp:
+                for ctr["lines"], line in enumerate(fp, ctr["lines"]):
+                    line = line.lstrip()
+                    ctr["imports"] += line.startswith("import") + line.startswith("from")
+                    ctr["classes"] += line.startswith("class")
+                    ctr["comments"] += "#" in line
+                    ctr["functions"] += line.startswith("def")
+                    ctr["coroutines"] += line.startswith("async def")
+                    ctr["docstrings"] += line.startswith('"""') + line.startswith("'''")
+
+            embed=discord.Embed(
+                title="Tea Bot Code Stats",
+                description="\n".join([f"**{k.capitalize()}:** {v}" for k, v in ctr.items()]),
+                color = self.bot.color
+            )
+        await ctx.send(embed = embed)
 
 def setup(bot):
     bot.add_cog(Other(bot))
