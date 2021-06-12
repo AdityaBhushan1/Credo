@@ -1,4 +1,5 @@
 from discord.ext import commands
+from colorama import Fore
 
 class Events(commands.Cog):
     def __init__(self, bot):
@@ -6,13 +7,12 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print(f"-------------------------------------")
-        print(f"Logging In...........................")
-        print(f"Logged In as: {self.bot.user.name}({self.bot.user.id})")
-        print(f"Connected Guilds:", len(self.bot.guilds))
-        print(f"Connected Users", len(self.bot.users))
-        print(f"-------------------------------------")
-    
+        print(Fore.RED + f"-------------------------------------")
+        print(Fore.GREEN + f"Logging In...........................")
+        print(Fore.GREEN + f"Logged In as: {self.bot.user.name}({self.bot.user.id})")
+        print(Fore.GREEN + f"Connected Guilds:", len(self.bot.guilds))
+        print(Fore.GREEN + f"Connected Users", len(self.bot.users))
+        print(Fore.RED + f"-------------------------------------")
 
 def setup(bot):
     bot.add_cog(Events(bot))
