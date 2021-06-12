@@ -1,10 +1,12 @@
-import discord,sys,traceback,asyncpg,jishaku,asyncio
+import discord,sys,traceback,asyncpg,jishaku,asyncio,mystbin
 from discord.ext import commands
 from cogs.utils import context
 import config
 from cogs.utils.jsonreaders import Config
+from colorama import Fore,init
+# from .cogs.utils.util import traceback_maker
 
-
+init(autoreset=True)
 intents = discord.Intents.default()
 intents.members = True
 
@@ -29,7 +31,7 @@ class TeaBot(commands.Bot):
             fetch_offline_members=True,
             **kwargs,
         )
-        self.OWNER = config.owner
+        self.OWNER = config.owners
         self.color = config.color
         self.guild = config.guild
         self.logo = config.logo
@@ -44,6 +46,7 @@ class TeaBot(commands.Bot):
         self.defaultprefix = config.prefix
         self.loop = asyncio.get_event_loop()
         self.prefixes = Config('prefixes.json')
+        self.binclient = mystbin.Client()
 
     async def process_commands(self, message):
         ctx = await self.get_context(message,cls=context.Context)
@@ -91,8 +94,9 @@ if __name__ == "__main__":
     for extension in extensions:
         try:
             bot.load_extension(extension)
+            print(Fore.GREEN + f"{extension} was loaded successfully!")
         except Exception as e:
-            print(f'Error Loading {extension}', file=sys.stderr)
+            print(Fore.RED+f'Error Loading {extension}', file=sys.stderr)
             traceback.print_exc()
 
 bot.load_extension("jishaku")
@@ -102,13 +106,26 @@ bot.load_extension("jishaku")
 async def licog(ctx):
     await ctx.send(extensions)
 
+# @bot.command(hidden=True)
+# @commands.is_owner()
+# async def reloadall(slef,ctx):
+#     for extension in extensions:
+#         try:
+#             bot.load_extension(extension)
+#         except Exception as e:
+#             await ctx.send(traceback_maker(e))
+        
+#     await ctx.success(f'Reloaded All Extensions')
+
 async def create_db_pool():
     bot.db = await asyncpg.create_pool(database=config.postgresqldb, 
     user=config.postgresqlusername, 
     password=config.postgresqlpass,
     host=config.postgresqlhost)
-    print('-------------------------------------')
-    print('Conected With Databse')
+    print(Fore.RED + '-------------------------------------')
+    print(Fore.GREEN + 'Conected With Databse')
+
+
 bot.loop.create_task(create_db_pool())
 
 
