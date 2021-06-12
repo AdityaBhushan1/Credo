@@ -13,4 +13,3 @@ class TopGG(commands.Cog):
 
 def setup(bot):
     bot.add_cog(TopGG(bot))
-    print('Loaded top.gg')
