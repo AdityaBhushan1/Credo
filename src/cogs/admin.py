@@ -6,19 +6,18 @@ from .utils.util import traceback_maker,clean_code
 from .utils.emote import tick, error
 import traceback
 import io
-from .utils.paginitators import Pag,PaginatorInterface, TeaPages, WrappedPaginator,TextPageSource,TeaPages
+from .utils.paginitators import Pag, TeaPages,TextPageSource,TeaPages
 import contextlib
 import io
 import textwrap
 from .utils.formats import TabularData, plural
 import time
-import inspect
 from typing import Union, Optional
 import copy
 import asyncio
 import subprocess
 from .utils import menus
-from .utils.util import ActionReason,GlobalChannel
+from .utils.util import GlobalChannel
 
 
 class Owner_Commands(commands.Cog):
@@ -47,10 +46,9 @@ class Owner_Commands(commands.Cog):
         """Load any extension"""
         try:
             self.bot.load_extension(f"cogs.{name}")
-
+            await ctx.send(f"{tick} | Loaded extension **{name}**")
         except Exception as e:
             return await ctx.send(traceback_maker(e))
-        await ctx.send(f"{tick} | Loaded extension **{name}**")
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -281,11 +279,11 @@ class Owner_Commands(commands.Cog):
                 em.set_author(name="TierGamerpy#0252",icon_url='https://cdn.discordapp.com/avatars/749550694469599233/9abccc9f94b2f9e01cc2e788ff3c8cf0.webp?size=1024')
                 try:
                     await channel.send(embed = em)
+                    success += 1
                 except:continue
+
             except:
                 pass
-            else:
-                success += 1
         delta = time.time() - start
         await ctx.send(f'Successfully sent to {success} channels (out of {len(to_send)}) in {delta:.2f}s.')
 
