@@ -85,7 +85,7 @@ class SmanagerListeners(commands.Cog):
                 role = discord.utils.get(message.guild.roles, id = scrims['correct_reg_role'])
                 try:
                     await message.author.add_roles(role)
-                    # print('asssgined role')
+                    
                 except:
                     pass
                 # print('updated cache')
@@ -174,28 +174,42 @@ class SmanagerListeners(commands.Cog):
     async def on_reg_open(self,channel_id):
         # print('extered on_reg_open')
         channel = await self.bot.fetch_channel(channel_id)
-        await self.bot.db.execute(f'UPDATE smanager.custom_data SET is_running = $1,team_names = NULL WHERE reg_ch = $2',True,channel.id)
-        data = await self.bot.db.fetchrow(f"SELECT * FROM smanager.custom_data WHERE reg_ch = $1",channel.id)
-        guild = await self.bot.fetch_guild(data['guild_id'])
-        if data['open_role'] == None:
-            overwrite = channel.overwrites_for(guild.default_role)
-            overwrite.send_messages = True
-            overwrite.view_channel = True
-            await channel.set_permissions(guild.default_role, overwrite=overwrite)
-            self.scrim_data[data['c_id']] = {"counter":data['allowed_slots'],"team_name":[]}
-            # print(self.scrim_data)
-            self.bot.dispatch("reg_ch_open_msg",channel_id)
-            self.bot.dispatch("reg_open_msg_logs",channel_id,guild.id)
+        if not channel:return
         else:
-            role = guild.get_role(data["open_role"])
-            overwrite = channel.overwrites_for(role)
-            overwrite.send_messages = True
-            overwrite.view_channel = True
-            self.scrim_data[data['c_id']] = {"counter":data['allowed_slots'],"team_name":[]}
-            # print(self.scrim_data)
-            await channel.set_permissions(role, overwrite=overwrite)
-            self.bot.dispatch("reg_ch_open_msg",channel_id)
-            self.bot.dispatch("reg_open_msg_logs",channel_id,guild.id)
+            await self.bot.db.execute(f'UPDATE smanager.custom_data SET is_running = $1,team_names = NULL WHERE reg_ch = $2',True,channel.id)
+            data = await self.bot.db.fetchrow(f"SELECT * FROM smanager.custom_data WHERE reg_ch = $1",channel.id)
+            guild = await self.bot.fetch_guild(data['guild_id'])
+            if not guild:return 
+            else:
+                if data['open_role'] == None:
+                    overwrite = channel.overwrites_for(guild.default_role)
+                    overwrite.send_messages = True
+                    overwrite.view_channel = True
+                    self.scrim_data[data['c_id']] = {"counter":data['allowed_slots'],"team_name":[]}
+                    try:
+                        await channel.set_permissions(guild.default_role, overwrite=overwrite)
+                    except:
+                        self.bot.dispatch("cannot_open_reg",guild.id,f"I Was Unable To Open Registration For `{data['c_id']}` Because I Don't Have Premission To Manager Channe")
+                        self.scrim_data.pop(data['c_id'])
+                        return
+                    else:
+                        self.bot.dispatch("reg_ch_open_msg",channel.id)
+                        self.bot.dispatch("reg_open_msg_logs",channel.id,guild.id)
+                else:
+                    role = guild.get_role(data["open_role"])
+                    overwrite = channel.overwrites_for(role)
+                    overwrite.send_messages = True
+                    overwrite.view_channel = True
+                    self.scrim_data[data['c_id']] = {"counter":data['allowed_slots'],"team_name":[]}
+                    try:
+                        await channel.set_permissions(guild.default_role, overwrite=overwrite)
+                    except:
+                        self.bot.dispatch("cannot_open_reg",guild.id,f"I Was Unable To Open Registration For `{data['c_id']}` Because I Don't Have Premission To Manager Channe")
+                        self.scrim_data.pop(data['c_id'])
+                        return
+                    else:
+                        self.bot.dispatch("reg_ch_open_msg",channel.id)
+                        self.bot.dispatch("reg_open_msg_logs",channel.id,guild.id)
 
         
 
@@ -298,6 +312,13 @@ class SmanagerListeners(commands.Cog):
         guild = self.bot.get_guild(guild_id)
         log_channel = discord.utils.get(guild.channels, name='teabot-sm-logs')
         em = discord.Embed(title = '🛠️ Registration Denied 🛠️' ,description = f'{message}',color=self.bot.color)
+        await log_channel.send(embed=em)
+
+    @commands.Cog.listener()
+    async def on_cannot_open_reg(self,guild_id,message:str):
+        guild = self.bot.get_guild(guild_id)
+        log_channel = discord.utils.get(guild.channels, name='teabot-sm-logs')
+        em = discord.Embed(title = '🛠️ Cannot Open Registartion 🛠️' ,description = f'{message}',color=self.bot.color)
         await log_channel.send(embed=em)
 
 
