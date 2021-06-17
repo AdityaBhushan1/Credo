@@ -66,44 +66,16 @@ class SmanagerTasks(commands.Cog):
         print(delta)
         await asyncio.sleep(delta)
 
-    # @tasks.loop(hours = 24)
-    # async def db_update_autoclean(self):
-    
-    # @db_update_autoclean.before_loop
-    # async def before_db_update_autoclean(self):
-    #     await self.bot.wait_until_ready()
-    #     hour, minute = 00,15
-
-    #     now = datetime.now()
-    #     future = datetime(now.year, now.month, now.day, hour, minute)
-
-    #     if now.hour >= hour and now.minute > minute:
-    #         future += timedelta(days=1)
-
-    #     delta = (future - now).seconds
-    #     print(delta)
-    #     await asyncio.sleep(delta)
     ###################################################################################################################
     #========================================scrims manager Auto Open=================================================#
     ###################################################################################################################
 
     @tasks.loop(seconds = 30)
     async def auto_open(self):
-        print('entered autoopen')
-        # sunday -----------------------------------
-        if dt.date.today().isoweekday() == 7:
-            data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND open_on_sunday = $5 AND allowed_slots != $6",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,True,0)
-            if not data: return
-            channel_id = []
-            for res in data:
-                res = res['reg_ch']
-                channel_id.append(res)
-            for channel in channel_id:
-                self.bot.dispatch("reg_open",channel)
         # monday -----------------------------------
-        elif dt.date.today().isoweekday() == 1:
-            data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND allowed_slots != $5 AND open_on_monday = $6 AND reg_ch != NULL",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,0,True)
-            if not data: return
+        if dt.date.today().isoweekday() == 1:
+            data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND allowed_slots != $5 AND open_on_monday = $6",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,0,True)
+            # # # # if not data: return
             channel_id = []
             for res in data:
                 res = res['reg_ch']
@@ -112,8 +84,8 @@ class SmanagerTasks(commands.Cog):
                 self.bot.dispatch("reg_open",channel)
         # tuesday -----------------------------------
         elif dt.date.today().isoweekday() == 2:
-            data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND allowed_slots != $5 AND open_on_tuesday = $6 AND reg_ch != NULL",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,0,True)
-            if not data: return
+            data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND allowed_slots != $5 AND open_on_tuesday = $6",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,0,True)
+            # # # # if not data: return
             channel_id = []
             for res in data:
                 res = res['reg_ch']
@@ -122,8 +94,8 @@ class SmanagerTasks(commands.Cog):
                 self.bot.dispatch("reg_open",channel)
         # wednesday -----------------------------------
         elif dt.date.today().isoweekday() == 3:
-            data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND allowed_slots != $5 AND open_on_wednesday = $6 AND reg_ch != NULL",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,0,True)
-            if not data: return
+            data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND allowed_slots != $5 AND open_on_wednesday = $6",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,0,True)
+            # # # # if not data: return
             channel_id = []
             for res in data:
                 res = res['reg_ch']
@@ -132,18 +104,29 @@ class SmanagerTasks(commands.Cog):
                 self.bot.dispatch("reg_open",channel)
         # thursday -----------------------------------
         elif dt.date.today().isoweekday() == 4:
-            data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND allowed_slots != $5 AND open_on_thursday = $6 AND reg_ch != NULL",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,0,True)
-            if not data: return
+            # print('thursday')
+            data = await self.bot.db.fetch(f"""
+            SELECT * FROM smanager.custom_data WHERE 
+            open_time <= $1 
+            AND toggle = $2 
+            AND is_running = $3 
+            AND is_registeration_done_today = $4 
+            AND allowed_slots != $5 
+            AND open_on_thursday = $6 
+            """
+            ,datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,0,True)
+            # # # if not data: return
             channel_id = []
             for res in data:
                 res = res['reg_ch']
                 channel_id.append(res)
             for channel in channel_id:
                 self.bot.dispatch("reg_open",channel)
+                # print('dipatched')
         # friday -----------------------------------
         elif dt.date.today().isoweekday() == 5:
-            data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND allowed_slots != $5 AND open_on_friday = $6 AND reg_ch != NULL",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,0,True)
-            if not data: return
+            data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND allowed_slots != $5 AND open_on_friday = $6",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,0,True)
+            # # # if not data: return
             channel_id = []
             for res in data:
                 res = res['reg_ch']
@@ -152,7 +135,17 @@ class SmanagerTasks(commands.Cog):
                 self.bot.dispatch("reg_open",channel)
         # saturday -----------------------------------
         elif dt.date.today().isoweekday() == 6:
-            data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND allowed_slots != $5 AND open_on_saturday = $6 AND reg_ch != NULL",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,0,True)
+            data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND allowed_slots != $5 AND open_on_saturday = $6",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,0,True)
+            channel_id = []
+            for res in data:
+                res = res['reg_ch']
+                channel_id.append(res)
+            for channel in channel_id:
+                self.bot.dispatch("reg_open",channel)
+        # sunday -----------------------------------
+        elif dt.date.today().isoweekday() == 7:
+            data = await self.bot.db.fetch(f"SELECT reg_ch FROM smanager.custom_data WHERE open_time <= $1 AND toggle = $2 AND is_running = $3 AND is_registeration_done_today = $4 AND allowed_slots = $5 AND open_on_sunday != $6",datetime.now(timezone("Asia/Kolkata")).time(),True,False,False,0,True)
+            # # # if not data: return
             channel_id = []
             for res in data:
                 res = res['reg_ch']
@@ -160,6 +153,7 @@ class SmanagerTasks(commands.Cog):
             for channel in channel_id:
                 self.bot.dispatch("reg_open",channel)
         else:
+            # print('Not Entered Any Day')
             pass
 
     @auto_open.before_loop
