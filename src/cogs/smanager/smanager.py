@@ -343,14 +343,14 @@ class Esports(commands.Cog):
             raise expectations.ScrimsManagerNotSetup
 
         data = await self.bot.db.fetchrow('SELECT * FROM smanager.custom_data WHERE c_id = $1 AND guild_id = $2',custom_id,ctx.guild.id)
-
-        channel = await self.bot.db.fetchval('SELECT reg_ch FROM smanager.custom_data WHERE c_id = $1 AND guild_id = $2',custom_id,ctx.guild.id)
-        if not channel:
-            return await ctx.send(f'{emote.error} | Thats Not Correct Custom ID, To Get Valid Custom ID Use `{ctx.prefix}smanager config`')
-
         if not data:
             return await ctx.send(f'{emote.error} | Thats Not Correct Custom ID, To Get Valid Custom ID Use `{ctx.prefix}smanager config`')
-        
+            
+        if data['toggle'] == False:
+            return await ctx.error(f'The Scrims Is Toggled Of So You Can Not Execute This Command')
+
+        channel = data['reg_ch']
+
         if data['is_registeration_done_today'] == True:
             return await ctx.send(f'{emote.error} | Registration For Today Is Already Completed')
 
@@ -376,24 +376,18 @@ class Esports(commands.Cog):
 
         if not data:
             return await ctx.send(f'{emote.error} | Thats Not Correct Custom ID, To Get Valid Custom ID Use `{ctx.prefix}smanager config`')
-        
+            
+        if data['toggle'] == False:
+            return await ctx.error(f'The Scrims Is Toggled Of So You Can Not Execute This Command')
+
         if data['is_registeration_done_today'] == True:
             return await ctx.send(f'{emote.error} | Registration For Today Is Already Completed')
-        else:
-            if data['is_running'] == False:
-                return await ctx.send(f'{emote.error} | Registration Has Not Opened Yet')
-        channel = discord.utils.get(ctx.guild.channels, id=data['reg_ch'])
-        overwrite = channel.overwrites_for(ctx.guild.default_role)
-        overwrite.send_messages = False
-        overwrite.view_channel = True
-        try:
-            await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
-        except:
-            return await ctx.send(f'{emote.error} | I Don Not Have Manage channel permission')
+        else:pass
 
-        await channel.send(':lock: | **__Registration Is Closed Now.__**')
-        self.bot.dispatch("reg_closed_logs",data['c_id'],data['custom_title'],data['custom_num'],data['guild_id'])
-        self.bot.dispatch("reg_closed_db_update",data)
+        if data['is_running'] == False:
+            return await ctx.send(f'{emote.error} | Registration Has Not Opened Yet')
+
+        self.bot.dispatch("auto_close_reg",data['reg_ch'])
         await self.bot.db.execute('UPDATE smanager.custom_data SET  is_running = $1, is_registeration_done_today = $2 WHERE reg_ch = $3',False,True,data['reg_ch'])
 
         await ctx.send(f'{emote.tick}')
