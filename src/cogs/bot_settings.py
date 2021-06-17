@@ -1,7 +1,6 @@
 from discord.ext import commands
 from .utils import emote
 import discord
-from .utils.checks import is_bot_setuped
 from .utils import expectations
 
 class Prefix(commands.Converter):
@@ -139,17 +138,9 @@ class BotSettings(commands.Cog):
         await ctx.db.execute('UPDATE public.server_configs SET automeme_channel_id = $2,automeme_toogle = $3 WHERE guild_id = $1', ctx.guild.id, channel.id,True)
         await ctx.send(f'{emote.tick} | Successfully Setuped Automeme Channel To {channel.mention}')
 
-    @config.group()
-    async def autorole(self,ctx):
-        '''
-        Gives Automaticaly On New Member,BotSettings Join To Server
-        '''
-        if ctx.invoked_subcommand is None:
-            await ctx.send_help(ctx.command)
-
-    @autorole.command(name='set-human')
+    @config.command(name='autorole-set-human')
     @commands.has_permissions(manage_guild=True)
-    async def autorole_set_human(self,ctx,role:discord.Role):
+    async def config_autorole_set_human(self,ctx,role:discord.Role):
         '''
         Sets The Autorole For Human 
         '''
@@ -166,9 +157,9 @@ class BotSettings(commands.Cog):
         await ctx.send(f'{emote.tick} | Successfully Set Autorole For Humans To {role.name}')
 
 
-    @autorole.command(name='set-bot')
+    @config.command(name='autorole-set-bot')
     @commands.has_permissions(manage_guild=True)
-    async def autorole_set_bot(self,ctx,role:discord.Role):
+    async def config_autorole_set_bot(self,ctx,role:discord.Role):
         '''
         Sets The Autorole For Bots 
         '''
