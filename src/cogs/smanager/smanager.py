@@ -777,6 +777,7 @@ class Esports(commands.Cog):
             role = discord.utils.get(ctx.guild.roles, id = scrim['correct_reg_role'])
             _role = getattr(role, "mention", "`Role Deleted!`")
             open_time = (scrim['open_time']).strftime("%I:%M %p")
+            close_time = 'None'
             if scrim['close_time'] != None:
                 close_time = (scrim['close_time']).strftime("%I:%M %p")
             ping_role = discord.utils.get(ctx.guild.roles, id = scrim['ping_role'])
