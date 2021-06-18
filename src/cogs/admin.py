@@ -269,21 +269,18 @@ class Owner_Commands(commands.Cog):
             res = res['channel_id']
             channel_id.append(res)
         to_send = []
+        success = 0
         for channels in channel_id:
             channel = self.bot.get_channel(channels)
             to_send.append(channel)
-            success = 0
             start = time.time()
+            em = discord.Embed(title = '📢 | Tea Bot Announcement | 📢',description=args,color=self.bot.color)
+            em.set_author(name="TierGamerpy#0252",icon_url=ctx.author.avatar_url)
             try:
-                em = discord.Embed(title = '📢 | Tea Bot Announcement | 📢',description=args,color=self.bot.color)
-                em.set_author(name="TierGamerpy#0252",icon_url='https://cdn.discordapp.com/avatars/749550694469599233/9abccc9f94b2f9e01cc2e788ff3c8cf0.webp?size=1024')
-                try:
-                    await channel.send(embed = em)
-                    success += 1
-                except:continue
-
+                await channel.send(embed = em)
+                success += 1
             except:
-                pass
+                continue
         delta = time.time() - start
         await ctx.send(f'Successfully sent to {success} channels (out of {len(to_send)}) in {delta:.2f}s.')
 
