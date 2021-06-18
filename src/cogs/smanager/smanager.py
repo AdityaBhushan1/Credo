@@ -895,7 +895,7 @@ class Esports(commands.Cog):
 ####################################################################################################################
 #======================================================== Easy Tagging ============================================#
 ####################################################################################################################
-
+'''
     @commands.group(invoke_without_command = True,aliases = ['ez_tag','eztag','ez-tag','etag'])
     async def easytag(self,ctx):
         """
@@ -941,7 +941,7 @@ class Esports(commands.Cog):
             await ctx.db.execute('UPDATE smanager.ez_tag SET toggle = $1 WHERE guild_id = $2',False,ctx.guild.id)
             return await ctx.success('Successfully Turned Off Easy Tagging')
 
-
+'''
 
 ####################################################################################################################
 #===================================================== Tournament Manager =========================================#
