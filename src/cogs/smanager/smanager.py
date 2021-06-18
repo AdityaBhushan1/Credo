@@ -1,5 +1,4 @@
-import asyncio
-import discord,re,json
+import discord,re,json,asyncio
 from discord.ext import commands
 from ..utils import emote
 from .sutils import CustomEditMenu,DaysEditorMenu,delete_denied_message
@@ -7,9 +6,7 @@ from ..utils.paginitators import Pages
 from prettytable import PrettyTable,ORGMODE
 from datetime import datetime
 from disputils import  BotConfirmation
-from .listners import SmanagerListeners
-from .tasks import SmanagerTasks
-from .tag_check import TagCheckListners
+from .events import EsportsListners
 from ..utils import expectations
 from pytz import timezone
 
@@ -778,9 +775,31 @@ class Esports(commands.Cog):
             reg_channel = getattr(ch, "mention", "`Channel Deleted!`")
             slot_channel = getattr(slot_ch, "mention", "`Channel Deleted!`")
             role = discord.utils.get(ctx.guild.roles, id = scrim['correct_reg_role'])
-            role = getattr(role, "mention", "`Role Deleted!`")
+            _role = getattr(role, "mention", "`Role Deleted!`")
             open_time = (scrim['open_time']).strftime("%I:%M %p")
-            mystring = f" Scrim ID: `{scrim['c_id']}`\n Name: `{scrim['custom_title']}`\n Registration Channel: {reg_channel}\n Slotlist Channel: {slot_channel}\n Role: {role}\n Mentions: `{scrim['num_correct_mentions']}`\n Total Slots: `{scrim['num_slots']}`\n Reserved Slots : `{scrim['reserverd_slots']}`\n Open Time: `{open_time}`\n Toggle: `{scrim['toggle']}`"
+            if scrim['close_time'] != None:
+                close_time = (scrim['close_time']).strftime("%I:%M %p")
+            ping_role = discord.utils.get(ctx.guild.roles, id = scrim['ping_role'])
+            _ping_role = getattr(ping_role, "mention", "`None`")
+            open_role = discord.utils.get(ctx.guild.roles, id = scrim['open_role'])
+            _open_role = getattr(open_role, "mention", "`None`")
+
+
+
+            mystring = f""" Scrim ID: `{scrim['c_id']}`\n 
+            Name: `{scrim['custom_title']}`\n 
+            Registration Channel: {reg_channel}\n 
+            Slotlist Channel: {slot_channel}\n 
+            Role: {_role}\n 
+            Ping Role: {_ping_role}\n 
+            Open Role: {_open_role}\n 
+            Mentions: `{scrim['num_correct_mentions']}`\n 
+            Total Slots: `{scrim['num_slots']}`\n 
+            Reserved Slots : `{scrim['reserverd_slots']}`\n 
+            Avaible Slots For Registration : `{scrim['allowed_slots']}`\n
+            Open Time: `{open_time}`\n 
+            Close Time: `{close_time}`\n 
+            Toggle: `{scrim['toggle']}`"""
 
             to_paginate.append(f"**`<------ {idx:02d} ------>`**\n\n{mystring}\n")
 
@@ -796,7 +815,7 @@ class Esports(commands.Cog):
 #================================================== Tag Check ===============================================================#
 ##############################################################################################################################
     
-    @commands.group()
+    @commands.group(aliases = ['tag-check','tgcheck','tg-check'])
     async def tag_check(self,ctx):
         '''
         Sytem For Tag Check
@@ -815,8 +834,8 @@ class Esports(commands.Cog):
             raise expectations.ScrimsManagerNotSetup
 
         data = await self.bot.db.fetchrow('SELECT * FROM smanager.tag_check WHERE guild_id = $1',ctx.guild.id)
+        editable = await ctx.send(f'{emote.loading} | Setting Up Tag Check')
         if not data:
-            editable = await ctx.send(f'{emote.loading} | Setting Up Tag Check')
             await ctx.db.execute('INSERT INTO smanager.tag_check (guild_id,ch_id,toggle,mentions_required) VALUES($1,$2,$3,$4)',ctx.guild.id,check_channel.id,True,mentions_required)
             await editable.edit(content = f'{emote.tick} | successfully setuped tag check in {check_channel.mention}')
             return
@@ -873,6 +892,57 @@ class Esports(commands.Cog):
         self.bot.loop.create_task(delete_denied_message(msg, 30 * 60))
 
 ####################################################################################################################
+#======================================================== Easy Tagging ============================================#
+####################################################################################################################
+
+    @commands.group(invoke_without_command = True,aliases = ['ez_tag','eztag','ez-tag','etag'])
+    async def easytag(self,ctx):
+        """
+        Handles Easy Tagging In Your Server
+        """
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @easytag.command(name = 'set')
+    @commands.has_permissions(manage_guild = True)
+    async def easytag_set(self,ctx,channel:discord.TextChannel):
+        """
+        Setups Easy tagging In Your Server
+        """
+        data = await self.bot.db.fetchrow('SELECT * FROM smanager.ez_tag WHERE guild_id = $1',ctx.guild.id)
+        editable = await ctx.send(f'{emote.loading} | Setting Up Easy Tag')
+        em = discord.Embed(title = "**__Tea Bot Easy Tagging__**",color = self.bot.color)
+        em.description = f"""
+            Unable to mention team mates while registering in scrims? Do not worry, we are here to help! Mention your team mates below and get their ID.\n\nUse the ID you get below in your registration format. This ID will tag yourteam mates and your registration will be successfully every single time.\n\nYou have 10 seconds to copy the ID
+        """
+        if not data:
+            await ctx.db.execute('INSERT INTO smanager.ez_tag (guild_id,ch_id) VALUES($1,$2)',ctx.guild.id,channel.id)
+            final_embed = await channel.send(embed = em)
+            await final_embed.pin(reason = 'bcs its important')
+            await editable.edit(content = f'{emote.tick} | successfully setuped easy tag in {channel.mention}')
+            return
+        await ctx.db.execute('UPDATE smanager.ez_tag SET ch_id=$1, WHERE guild_id = $2',channel.id,ctx.guild.id)
+        final_embed = await channel.send(embed = em)
+        await final_embed.pin(reason = 'bcs its important')
+        await editable.edit(content = f'{emote.tick} | successfully setuped easy tag in {channel.mention}')
+
+    @easytag.command(name = 'toggle')
+    @commands.has_permissions(manage_guild = True)
+    async def easytag_toggle(self,ctx):
+        """Toggles Easy Tagging In Server"""
+        data = await self.bot.db.fetchrow('SELECT * FROM smanager.ez_tag WHERE guild_id = $1',ctx.guild.id)
+        if not data:
+            return await ctx.error('You Do Not Easy Tag Setuped') 
+        if data['toggle'] == False:
+            await ctx.db.execute('UPDATE smanager.ez_tag SET toggle = $1 WHERE guild_id = $2',True,ctx.guild.id)
+            return await ctx.success('Successfully Turned On Easy Tagging')
+        else:
+            await ctx.db.execute('UPDATE smanager.ez_tag SET toggle = $1 WHERE guild_id = $2',False,ctx.guild.id)
+            return await ctx.success('Successfully Turned Off Easy Tagging')
+
+
+
+####################################################################################################################
 #===================================================== Tournament Manager =========================================#
 ####################################################################################################################
 
@@ -880,5 +950,4 @@ class Esports(commands.Cog):
 
 def setup(bot):
     bot.add_cog(Esports(bot))
-    bot.add_cog(SmanagerListeners(bot))
-    bot.add_cog(TagCheckListners(bot))
+    bot.add_cog(EsportsListners(bot))
