@@ -57,6 +57,13 @@ CREATE TABLE IF NOT EXISTS smanager.tag_check(
     PRIMARY KEY (guild_id)
 );
 
+CREATE TABLE IF NOT EXISTS smanager.ez_tag(
+    guild_id BIGINT NOT NULL,
+    ch_id BIGINT NOT NULL,
+    toggle BOOLEAN DEFAULT(TRUE),
+    PRIMARY KEY (guild_id)
+);
+
 CREATE TABLE IF NOT EXISTS server_configs(
     guild_id BIGINT NOT NULL,
     is_bot_setuped BOOLEAN DEFAULT(FALSE),
