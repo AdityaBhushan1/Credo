@@ -376,50 +376,7 @@ class EsportsListners(commands.Cog):
 ####################################################################################################################
 #================================================ Role delete listners ============================================#
 ####################################################################################################################
-# TODo test
-'''
-    @commands.Cog.listener()
-    async def on_guild_role_delete(self,role):
-        log_channel = discord.utils.get(role.guild.channels, name='teabot-sm-logs')
-        reg_role = await self.bot.db.fetchrow("SELECT * FROM smanager.custom_data WHERE correct_reg_role = $1",role.id)
-        ping_role = await self.bot.db.fetchrow("SELECT * FROM smanager.custom_data WHERE correct_reg_role = $1",role.id)
-        if not reg_role:return
-        else:
-            if role.id == reg_role['correct_reg_role']:
-                await self.bot.db.execute("UPDATE smanager.custom_data SET toggle = $1 WHERE c_id = $2",False,reg_role['c_id'])
-                if reg_role['is_running'] == True:
-                    await self.bot.db.execute("UPDATE smanager.custom_data SET is_running = $1,is_registeration_done_today = $2 WHERE c_id = $3 AND is_running = $4",False,True,reg_role['c_id'],True)
-                else:
-                    pass
-                em = discord.Embed(description = f"The Correct Registration Role Has Been Deleted And Scrims For `{reg_role['c_id']}` Toggled Off Kindly Set New Role And Toggle The Scrims On",color = self.bot.color)
-                await log_channel.send(embed=em)
-                return
 
-        ping_role = await self.bot.db.fetchrow("SELECT * FROM smanager.custom_data WHERE ping_role = $1",role.id)
-        if not ping_role:return
-        if role.id == ping_role['ping_role']:
-            await self.bot.db.execute("UPDATE smanager.custom_data SET toggle = $1 WHERE c_id = $2",False,ping_role['c_id'])
-            if ping_role['is_running'] == True:
-                await self.bot.db.execute("UPDATE smanager.custom_data SET is_running = $1,is_registeration_done_today = $2 WHERE c_id = $3 AND is_running = $4",False,True,ping_role['c_id'],True)
-            else:
-                pass
-            em = discord.Embed(description = f"The Ping Role Has Been Deleted And Scrims For `{ping_role['c_id']}` Is Toggled Off Kindly Set New Ping Role And Toggle The Scrims On",color = self.bot.color)
-            await log_channel.send(embed=em)
-            return
-
-        open_role = await self.bot.db.fetchrow("SELECT * FROM smanager.custom_data WHERE open_role = $1",role.id)
-        if not open_role:return
-        if role.id == open_role['open_role']:
-            await self.bot.db.execute("UPDATE smanager.custom_data SET toggle = $1 WHERE c_id = $2",False,open_role['c_id'])
-            if ping_role['is_running'] == True:
-                await self.bot.db.execute("UPDATE smanager.custom_data SET is_running = $1,is_registeration_done_today = $2 WHERE c_id = $3 AND is_running = $4",False,True,open_role['c_id'],True)
-            else:
-                pass
-            em = discord.Embed(description = f"The Open Role Has Been Deleted And Scrims For `{open_role['c_id']}` Is Toggled Off Kindly Set New Ping Role And Toggle The Scrims On",color = self.bot.color)
-            await log_channel.send(embed=em)
-            return
-
-'''
 ####################################################################################################################
 #============================================= tag check listners =================================================#
 ####################################################################################################################
