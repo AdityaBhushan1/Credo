@@ -24,36 +24,35 @@ class BotHelpPageSource(menus.ListPageSource):
         # just in case it doesn't fit perfectly
         # However, we have 6 per page so I'll try cutting it off at around 800 instead
         # Since there's a 6000 character limit overall in the embed
-        if cog.description:
-            short_doc = cog.description.split('\n', 1)[0] + '\n'
-        else:
-            short_doc = f'> No help found...\n'
+        # if cog.description:
+        #     short_doc = cog.description.split('\n', 1)[0] + '\n'
+        # else:
+        #     short_doc = f'> No help found...\n'
 
-        current_count = len(short_doc)
+        # current_count = len(short_doc)
         ending_note = '+%d not shown'
 
         page = []
         for command in commands:
             value = f'`{self.prefix}{command.name}` '
             count = len(value) + 1 # The space
-            if count + current_count < 800:
-                current_count += count
+            if count < 800:
                 page.append(value)
             else:
                 break
 
         if len(page) == len(commands):
             # We're not hiding anything so just return it as-is
-            return short_doc + ' '.join(page)
+            return ' '.join(page)
 
         hidden = len(commands) - len(page)
-        return short_doc + ' '.join(page) + '\n' + (ending_note % hidden)
+        return ' '.join(page) + '\n' + (ending_note % hidden)
 
 
     async def format_page(self, menu, cogs):
         prefix = menu.ctx.prefix
-        description = f'> Use "{prefix}help command" for more info on a command.\n' \
-                    f'> Use "{prefix}help category" for more info on a category.\n' \
+        description = f'> Use `{prefix}help command` for more info on a command.\n' \
+                    f'> Use `{prefix}help category` for more info on a category.\n' \
                     '> For more help, join the official bot [Support server](https://discord.gg/YSJVbxj9nw)'
 
         embed = discord.Embed(title='Bot Help Page', description=description, colour=discord.Colour.green())
@@ -77,7 +76,7 @@ class GroupHelpPageSource(menus.ListPageSource):
         self.description = self.group.description
 
     async def format_page(self, menu, commands):
-        embed = discord.Embed(title=self.title, description=f'> {self.description}', colour=discord.Colour.green())
+        embed = discord.Embed(title=self.title, description=f'{self.description}', colour=discord.Colour.green())
 
         for command in commands:
             signature = f'`{self.prefix}{command.qualified_name} {command.signature}`'
@@ -175,10 +174,7 @@ class PaginatedHelpCommand(commands.HelpCommand):
 
     def common_command_formatting(self, embed_like, command):
         embed_like.title = self.get_command_signature(command)
-        if command.description:
-            embed_like.description = f'{command.description}\n\n> {command.help}'
-        else:
-            embed_like.description = f'> No help found...'
+        embed_like.description = f'{command.description}\n\n> {command.help}' or f'> No help found...'
         
     async def send_command_help(self, command):
         # No pagination necessary for a single command.
