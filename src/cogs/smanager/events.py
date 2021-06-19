@@ -419,7 +419,7 @@ class EsportsListners(commands.Cog):
 ####################################################################################################################
 #============================================= easy tagging listners ==============================================#
 ####################################################################################################################
-
+'''
         
     @commands.Cog.listener(name = 'on_message')
     async def on_ez_tag_message(self,message):
@@ -445,3 +445,4 @@ class EsportsListners(commands.Cog):
             msg = await message.reply(f"```{message.clean_content}\nTags: {mentions}```")
             self.bot.loop.create_task(delete_denied_message(msg,10))
             self.bot.loop.create_task(delete_denied_message(message,5))
+            '''

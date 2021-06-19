@@ -777,6 +777,7 @@ class Esports(commands.Cog):
             role = discord.utils.get(ctx.guild.roles, id = scrim['correct_reg_role'])
             _role = getattr(role, "mention", "`Role Deleted!`")
             open_time = (scrim['open_time']).strftime("%I:%M %p")
+            close_time = 'None'
             if scrim['close_time'] != None:
                 close_time = (scrim['close_time']).strftime("%I:%M %p")
             ping_role = discord.utils.get(ctx.guild.roles, id = scrim['ping_role'])
@@ -894,7 +895,7 @@ class Esports(commands.Cog):
 ####################################################################################################################
 #======================================================== Easy Tagging ============================================#
 ####################################################################################################################
-
+'''
     @commands.group(invoke_without_command = True,aliases = ['ez_tag','eztag','ez-tag','etag'])
     async def easytag(self,ctx):
         """
@@ -940,7 +941,7 @@ class Esports(commands.Cog):
             await ctx.db.execute('UPDATE smanager.ez_tag SET toggle = $1 WHERE guild_id = $2',False,ctx.guild.id)
             return await ctx.success('Successfully Turned Off Easy Tagging')
 
-
+'''
 
 ####################################################################################################################
 #===================================================== Tournament Manager =========================================#
