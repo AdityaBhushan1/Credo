@@ -1,36 +1,27 @@
 from discord.ext import commands
-from disputils import BotConfirmation
-from ..utils import emote,util
-from collections import Counter, defaultdict
-import argparse, shlex,enum,asyncio,re,discord
-
-class Arguments(argparse.ArgumentParser):
-    def error(self, message):
-        raise RuntimeError(message)
-
-def safe_reason_append(base, to_append):
-    appended = base + f'({to_append})'
-    if len(appended) > 512:
-        return base
-    return appended
-
-
-
-class plural:
-    def __init__(self, value):
-        self.value = value
-    def __format__(self, format_spec):
-        v = self.value
-        singular, sep, plural = format_spec.partition('|')
-        plural = plural or f'{singular}s'
-        if abs(v) != 1:
-            return f'{v} {plural}'
-        return f'{v} {singular}'
-
+from ..utils.confirmater import ConfirmationPrompt
+from ..utils import (
+    emote,
+    util
+)
+import shlex,re,discord
+from .utils import (
+    role_checker,
+    plural,
+    Arguments,
+    do_removal,
+    _basic_cleanup_strategy,
+    _complex_cleanup_strategy,
+    Category
+)
+from contextlib import suppress
+from typing import Optional
 
 class Mod(commands.Cog, name='Moderation'):
     def __init__(self,bot):
         self.bot = bot
+        self.confirmater_title = 'Are You Sure?'
+        self.do_removal = do_removal
 
     # kick command
     @commands.command()
@@ -47,15 +38,15 @@ class Mod(commands.Cog, name='Moderation'):
         if ctx.message.author.id == member.id:
             await ctx.send('You  Cannot Kick Yourself')
             return
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Are you sure that you want to kick `{member}`?")
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title,description = f"Are you sure that you want to kick `{member}`?")
 
         if confirmation.confirmed:
             try:
                 await member.send(f"You Have Been kicked From {ctx.guild.name}, Because: " + reason)
             except:
                 pass
-            await ctx.send(f'{emote.tick} | Succefully Kicked {member}, Because: '+ reason)
+            await confirmation.update(description = f'{emote.tick} | Succefully Kicked {member}, Because: '+ reason)
             await member.kick(reason=reason)
         else:
             await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
@@ -76,15 +67,15 @@ class Mod(commands.Cog, name='Moderation'):
         if ctx.message.author.id == member.id:
             await ctx.send('You  Cannot Ban Yourself')
             return
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Are you sure that you want to ban `{member}`?")
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title,description= f"Are you sure that you want to ban `{member}`?")
 
         if confirmation.confirmed:
             try:
                 await member.send(f"You Have Been Baned From {ctx.guild.name}, Because: " + reason)
             except:
                 pass
-            await ctx.send(f'{emote.tick} | Succefully Banned {member}, Because: '+ reason)
+            await confirmation.update(description = f'{emote.tick} | Succefully Banned {member}, Because: '+ reason)
             await member.ban(reason=reason)
         else:
             await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
@@ -100,237 +91,180 @@ class Mod(commands.Cog, name='Moderation'):
         '''
         banned_users = await ctx.guild.bans()
         member_name, member_disc = member.split('#')
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Are you sure that you want to unban `{member}`?")
-
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title,description =  f"Thsi Will Unban `{member}`.")
         if confirmation.confirmed:
-
             for banned_entry in banned_users:
                 user = banned_entry.user
-
                 if (user.name, user.discriminator) == (member_name, member_disc):
-
                     await ctx.guild.unban(user)
-                    await ctx.send(member_name + "has been unbanned!")
+                    await confirmation.update(description = f"{member_name} has been unbanned!")
                     return
 
-            await ctx.send(member + " Was Not Found")
+            await confirmation.updated(description = f"{member} Was Not Found")
         else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
-    # mute
-    @commands.command()
-    @commands.has_permissions(ban_members=True)
-    @commands.bot_has_guild_permissions(ban_members=True)
-    async def mute(self, ctx, member : discord.Member):
-        '''
-        Mutes A Member On Server
-        '''
-        if ctx.message.author.id == member.id:
-            await ctx.send('You  Cannot Mute Yourself')
-            return
-        guild = ctx.guild
-        mutedRole = discord.utils.get(guild.roles, name= "Muted")
+            await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+# #todo fix confirmater
+#     @commands.command()
+#     @commands.has_permissions(ban_members=True)
+#     @commands.bot_has_guild_permissions(ban_members=True)
+#     async def mute(self, ctx, member : discord.Member):
+#         '''
+#         Mutes A Member On Server
+#         '''
+#         if ctx.message.author.id == member.id:
+#             await ctx.send('You  Cannot Mute Yourself')
+#             return
+#         guild = ctx.guild
+#         mutedRole = discord.utils.get(guild.roles, name= "Muted")
 
-        if not mutedRole:
-            mutedRole = await guild.create_role(name = "Muted")
+#         if not mutedRole:
+#             mutedRole = await guild.create_role(name = "Muted")
                 
-            for channel in guild.channels:
-                await channel.set_permissions(mutedRole, speak= False, send_messages= False)
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Are you sure that you want to mute `{member}`?")
+#             for channel in guild.channels:
+#                 await channel.set_permissions(mutedRole, speak= False, send_messages= False)
+#         confirmation = ConfirmationPrompt(ctx, self.bot.color)
+#         await confirmation.confirm(f"Are you sure that you want to mute `{member}`?")
 
-        if confirmation.confirmed:
-            await member.add_roles(mutedRole)
-            await ctx.send("{} has been muted" .format(member.mention,))
-        else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
+#         if confirmation.confirmed:
+#             await member.add_roles(mutedRole)
+#             await ctx.send("{} has been muted" .format(member.mention,))
+#         else:
+#             await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
+# #todo fix confirmater
+#     # unmute
+#     @commands.command()
+#     @commands.has_permissions(ban_members=True)
+#     @commands.bot_has_guild_permissions(ban_members=True)
+#     async def unmute(self, ctx,member : discord.Member):
+#         '''
+#         Unmutes A Member On Server
+#         '''
+#         guild = ctx.guild
+#         confirmation = ConfirmationPrompt(ctx, self.bot.color)
+#         await confirmation.confirm(f"Are you sure that you want to unmute `{member}`?")
 
-    # unmute
-    @commands.command()
-    @commands.has_permissions(ban_members=True)
-    @commands.bot_has_guild_permissions(ban_members=True)
-    async def unmute(self, ctx,member : discord.Member):
-        '''
-        Unmutes A Member On Server
-        '''
-        guild = ctx.guild
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Are you sure that you want to unmute `{member}`?")
+#         if confirmation.confirmed:
+#             for role in guild.roles:
+#                 if role.name == "Muted":
+#                     await member.remove_roles(role)
+#                     await ctx.send("{} has been unmuted" .format(member.mention,))
+#                     return 
+#         else:
+#             await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
 
-        if confirmation.confirmed:
-            for role in guild.roles:
-                if role.name == "Muted":
-                    await member.remove_roles(role)
-                    await ctx.send("{} has been unmuted" .format(member.mention,))
-                    return 
-        else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
+# #todo fix confirmater
+#     # create text channel
+#     @commands.command()
+#     @commands.has_permissions(manage_channels=True)
+#     @commands.bot_has_guild_permissions(manage_channels=True)
+#     async def createtxt(self,ctx,channelName):
+#         '''
+#         Creates A Text Channel On Server
+#         '''
+#         guild = ctx.guild
+#         confirmation = ConfirmationPrompt(ctx, self.bot.color)
+#         await confirmation.confirm(f"Are you sure that you want to create a channel named `{channelName}`?")
 
-    # create text channel
-    @commands.command()
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_guild_permissions(manage_channels=True)
-    async def createtxt(self,ctx,channelName):
-        '''
-        Creates A Text Channel On Server
-        '''
-        guild = ctx.guild
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Are you sure that you want to create a channel named `{channelName}`?")
+#         if confirmation.confirmed:
+#             em = discord.Embed(title='success', description='{} has been created' .format(channelName),color=discord.Colour.green())
+#             await guild.create_text_channel(name='{}'.format(channelName))
+#             await ctx.send(embed=em)
+#         else:
+#             await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
+# #todo fix confirmater
+#     # delete textcahnnel
+#     @commands.command()
+#     @commands.has_permissions(manage_channels=True)
+#     @commands.bot_has_guild_permissions(manage_channels=True)
+#     async def deletetxt(self,ctx,channel: discord.TextChannel):
+#         '''
+#         Deletes A Text Channel From Server
+#         '''
+#         confirmation = ConfirmationPrompt(ctx, self.bot.color)
+#         await confirmation.confirm(f"Are you sure that you want to delete the channel named `{channel}`?")
 
-        if confirmation.confirmed:
-            em = discord.Embed(title='success', description='{} has been created' .format(channelName),color=discord.Colour.green())
-            await guild.create_text_channel(name='{}'.format(channelName))
-            await ctx.send(embed=em)
-        else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
+#         if confirmation.confirmed:
+#             em = discord.Embed(title='success', description=f'channel: {channel} has been deleted' , color=discord.Colour.red())
+#             await ctx.send(embed=em)
+#             await channel.delete()    
+#         else:
+#             await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
 
-    # delete textcahnnel
-    @commands.command()
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_guild_permissions(manage_channels=True)
-    async def deletetxt(self,ctx,channel: discord.TextChannel):
-        '''
-        Deletes A Text Channel From Server
-        '''
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Are you sure that you want to delete the channel named `{channel}`?")
+# #todo fix confirmater
+#     # create vc
+#     @commands.command()
+#     @commands.has_permissions(manage_channels=True)
+#     @commands.bot_has_guild_permissions(manage_channels=True)
+#     async def createvc(self,ctx,channelName):
+#         '''
+#         Creates A Voice Channel On Server
+#         '''
+#         guild = ctx.guild
+#         confirmation = ConfirmationPrompt(ctx, self.bot.color)
+#         await confirmation.confirm(f"Are you sure that you want to create a vc named `{channelName}`?")
 
-        if confirmation.confirmed:
-            em = discord.Embed(title='success', description=f'channel: {channel} has been deleted' , color=discord.Colour.red())
-            await ctx.send(embed=em)
-            await channel.delete()    
-        else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
+#         if confirmation.confirmed:
+#             em = discord.Embed(title='success', description=f'{channelName} Has Been Created',color=discord.Colour.green())
+#             await guild.create_voice_channel(name=channelName)
+#             await ctx.send(embed=em)
+#         else:
+#             await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
+# #todo fix confirmater
+#     # delete vccahnnel
+#     @commands.command()
+#     @commands.has_permissions(manage_channels=True)
+#     @commands.bot_has_guild_permissions(manage_channels=True)
+#     async def deletevc(self,ctx,vc: discord.VoiceChannel):
+#         '''
+#         Deletes A Voice Channel From Server
+#         '''
+#         confirmation = ConfirmationPrompt(ctx, self.bot.color)
+#         await confirmation.confirm(f"Are you sure that you want to delete the vc named `{vc}`?")
 
+#         if confirmation.confirmed:
+#             em = discord.Embed(title='success', description=f'{vc} has been deleted' , color=discord.Colour.red())
+#             await ctx.send(embed=em)
+#             await vc.delete()
+#         else:
+#             await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
 
-    # create vc
-    @commands.command()
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_guild_permissions(manage_channels=True)
-    async def createvc(self,ctx,channelName):
-        '''
-        Creates A Voice Channel On Server
-        '''
-        guild = ctx.guild
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Are you sure that you want to create a vc named `{channelName}`?")
+# #todo fix confirmater
+#     @commands.command(aliases=['smon'])
+#     @commands.has_permissions(manage_channels=True)
+#     @commands.bot_has_guild_permissions(manage_channels=True)
+#     async def slowmode_on(self, ctx, time):
+#         """
+#         Adds Slow Mode To Channel
+#         """
+#         confirmation = ConfirmationPrompt(ctx, self.bot.color)
+#         await confirmation.confirm(f"Are you sure that you want to turn on slowmode for `{time}`seconds?")
 
-        if confirmation.confirmed:
-            em = discord.Embed(title='success', description=f'{channelName} Has Been Created',color=discord.Colour.green())
-            await guild.create_voice_channel(name=channelName)
-            await ctx.send(embed=em)
-        else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
+#         if confirmation.confirmed:
+#             await confirmation.update("Confirmed", color=0x55ff55)
+#             await ctx.channel.edit(slowmode_delay=time)
+#             await ctx.send(f'{time}s of slowmode was set on the current channel.')
+#         else:
+#             await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
 
-    # delete vccahnnel
-    @commands.command()
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_guild_permissions(manage_channels=True)
-    async def deletevc(self,ctx,vc: discord.VoiceChannel):
-        '''
-        Deletes A Voice Channel From Server
-        '''
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Are you sure that you want to delete the vc named `{vc}`?")
+# #todo fix confirmater
+#     @commands.command(aliases=['smoff'])
+#     @commands.has_permissions(manage_channels=True)
+#     @commands.bot_has_guild_permissions(manage_channels=True)
+#     async def slowmode_off(self, ctx):
+#         """
+#         Removes Slow Mode From Channel
+#         """
+#         confirmation = ConfirmationPrompt(ctx, self.bot.color)
+#         await confirmation.confirm(title = self.confirmater_title,description = "Are you sure that you want to off slowmode?")
 
-        if confirmation.confirmed:
-            em = discord.Embed(title='success', description=f'{vc} has been deleted' , color=discord.Colour.red())
-            await ctx.send(embed=em)
-            await vc.delete()
-        else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
+#         if confirmation.confirmed:
+#             await confirmation.update("Confirmed", color=0x55ff55)
+#             await ctx.channel.edit(slowmode_delay=0)
+#             await ctx.send(f'Slowmode removed.')
+#         else:
+#             await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
 
-
-    @commands.command()
-    @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_guild_permissions(manage_roles=True)
-    async def addrole(self,ctx,role: discord.Role, user:util.MemberID):
-        '''
-        Adds A Role To A Member
-        '''
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Are you sure that you want to add the this role `{role}` to `{user}`?")
-
-        if confirmation.confirmed:
-            await confirmation.update("Confirmed", color=0x55ff55)
-            await user.add_roles(role)
-            await ctx.send(f'Succefully Given {role.mention} To {user.mention}')
-        else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
-
-
-    # remove role
-    @commands.command()
-    @commands.has_permissions(manage_roles=True)
-    @commands.bot_has_guild_permissions(manage_roles=True)
-    async def removerole(self,ctx,role: discord.Role, user:util.MemberID):
-        '''
-        Removes A Role From A Member
-        '''
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Are you sure that you want to remove the this role `{role}` from `{user}`?")
-
-        if confirmation.confirmed:
-            await confirmation.update("Confirmed", color=0x55ff55)
-            await user.remove_roles(role)
-            await ctx.send(f'Succefully Removed {role.mention} From {user.mention}')
-        else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
-    
-
-    # # warn
-    # @commands.command()
-    # @commands.has_permissions(administrator=True)
-    # @commands.bot_has_guild_permissions(administrator=True)
-    # async def warn(self, ctx, member : MemberID, *, reason:ActionReason = None):
-    #     '''
-    #     Warns A Member On Server
-    #     '''
-    #     if reason is None:
-    #         reason = f'Action done by {ctx.author} (ID: {ctx.author.id})'
-    #     try:
-    #         await member.send(f"You Have Been Warned <:1626_warning_1:786100068246749205> on **{ctx.guild.name}** Because:" + reason)
-    #     except:
-    #         pass
-    #     await ctx.send(member.name + "Has Been Warned <:1626_warning_1:786100068246749205>, Because:" + reason)
-
-
-    @commands.command(aliases=['smon'])
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_guild_permissions(manage_channels=True)
-    async def slowmode_on(self, ctx, time):
-        """
-        Adds Slow Mode To Channel
-        """
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Are you sure that you want to turn on slowmode for `{time}`seconds?")
-
-        if confirmation.confirmed:
-            await confirmation.update("Confirmed", color=0x55ff55)
-            await ctx.channel.edit(slowmode_delay=time)
-            await ctx.send(f'{time}s of slowmode was set on the current channel.')
-        else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
-
-
-    @commands.command(aliases=['smoff'])
-    @commands.has_permissions(manage_channels=True)
-    @commands.bot_has_guild_permissions(manage_channels=True)
-    async def slowmode_off(self, ctx):
-        """
-        Removes Slow Mode From Channel
-        """
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm("Are you sure that you want to off slowmode?")
-
-        if confirmation.confirmed:
-            await confirmation.update("Confirmed", color=0x55ff55)
-            await ctx.channel.edit(slowmode_delay=0)
-            await ctx.send(f'Slowmode removed.')
-        else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
-        
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(kick_members=True)
@@ -343,15 +277,15 @@ class Mod(commands.Cog, name='Moderation'):
         if reason is None:
             reason = f'Action done by {ctx.author} (ID: {ctx.author.id})'
 
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Are you sure that you want to Soft Ban `{member}`?")
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title,description = f"Are you sure that you want to Soft Ban `{member}`?")
 
         if confirmation.confirmed:
             await ctx.guild.ban(member, reason=reason)
             await ctx.guild.unban(member, reason=reason)
-            await ctx.send(f'{emote.tick} | Succefully Soft Banned {member}')
+            await ctx.send(description = f'{emote.tick} | Succefully Soft Banned {member}')
         else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
+            await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
 
     @commands.command()
     @commands.guild_only()
@@ -370,8 +304,8 @@ class Mod(commands.Cog, name='Moderation'):
         if total_members == 0:
             return await ctx.send('Missing members to ban.')
 
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"This will ban **{plural(total_members):member}**. Are you sure?")
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title,description = f"This will ban **{plural(total_members):member}")
 
         if confirmation.confirmed:
 
@@ -382,10 +316,10 @@ class Mod(commands.Cog, name='Moderation'):
                 except discord.HTTPException:
                     failed += 1
 
-            await confirmation.update(f"{emote.tick} | Succefully Banned {total_members - failed}/{total_members} members.")
+            await confirmation.update(description = f"{emote.tick} | Succefully Banned {total_members - failed}/{total_members} members.")
 
         else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
+            await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
 
     @commands.command()
     @commands.guild_only()
@@ -404,8 +338,8 @@ class Mod(commands.Cog, name='Moderation'):
         if total_members == 0:
             return await ctx.send('Missing members to ban.')
 
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"This will Soft Ban **{plural(total_members):member}**. Are you sure?")
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title,description = f"This will Soft Ban **{plural(total_members):member}**.")
 
         if confirmation.confirmed:
 
@@ -417,46 +351,22 @@ class Mod(commands.Cog, name='Moderation'):
                 except discord.HTTPException:
                     failed += 1
 
-            await confirmation.update(f"{emote.tick} | Succefully Soft Banned {total_members - failed}/{total_members} members.")
+            await confirmation.update(description = f"{emote.tick} | Succefully Soft Banned {total_members - failed}/{total_members} members.")
 
         else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
+            await confirmation.update(description="Not confirmed", hide_author=True, color=0xff5555)
 
-    async def _basic_cleanup_strategy(self, ctx, search):
-        count = 0
-        async for msg in ctx.history(limit=search, before=ctx.message):
-            if msg.author == ctx.me:
-                await msg.delete()
-                count += 1
-        return { 'Bot': count }
-
-    async def _complex_cleanup_strategy(self, ctx, search):
-        prefixes = tuple(self.bot.get_guild_prefixes(ctx.guild))
-
-        def check(m):
-            return m.author == ctx.me or m.content.startswith(prefixes)
-
-        deleted = await ctx.channel.purge(limit=search, check=check, before=ctx.message)
-        return Counter(m.author.display_name for m in deleted)
 
     @commands.command()
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
     async def cleanup(self, ctx, search=100):
         """Cleans up the bot's messages from the channel.
-
-        If a search number is specified, it searches that many messages to delete.
-        If the bot has Manage Messages permissions then it will try to delete
-        messages that look like they invoked the bot as well.
-
-        After the cleanup is completed, the bot will send you a message with
-        which people got their messages deleted and their count. This is useful
-        to see which users are spammers.
         """
 
-        strategy = self._basic_cleanup_strategy
+        strategy = _basic_cleanup_strategy
         if ctx.me.permissions_in(ctx.channel).manage_messages:
-            strategy = self._complex_cleanup_strategy
+            strategy = _complex_cleanup_strategy
 
         spammers = await strategy(ctx, search)
         deleted = sum(spammers.values())
@@ -467,7 +377,6 @@ class Mod(commands.Cog, name='Moderation'):
             messages.extend(f'- **{author}**: {count}' for author, count in spammers)
 
         await ctx.send('\n'.join(messages), delete_after=10)
-
 
 
     @commands.group(aliases=['purge'])
@@ -487,40 +396,6 @@ class Mod(commands.Cog, name='Moderation'):
 
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
-
-    async def do_removal(self, ctx, limit, predicate, *, before=None, after=None):
-        if limit > 2000:
-            return await ctx.send(f'Too many messages to search given ({limit}/2000)')
-
-        if before is None:
-            before = ctx.message
-        else:
-            before = discord.Object(id=before)
-
-        if after is not None:
-            after = discord.Object(id=after)
-
-        try:
-            deleted = await ctx.channel.purge(limit=limit, before=before, after=after, check=predicate)
-        except discord.Forbidden as e:
-            return await ctx.send('I do not have permissions to delete messages.')
-        except discord.HTTPException as e:
-            return await ctx.send(f'Error: {e} (try a smaller search?)')
-
-        spammers = Counter(m.author.display_name for m in deleted)
-        deleted = len(deleted)
-        messages = [f'{deleted} message{" was" if deleted == 1 else "s were"} removed.']
-        if deleted:
-            messages.append('')
-            spammers = sorted(spammers.items(), key=lambda t: t[1], reverse=True)
-            messages.extend(f'**{name}**: {count}' for name, count in spammers)
-
-        to_send = '\n'.join(messages)
-
-        if len(to_send) > 2000:
-            await ctx.send(f'Successfully removed {deleted} messages.', delete_after=10)
-        else:
-            await ctx.send(to_send, delete_after=10)
 
     @remove.command()
     async def embeds(self, ctx, search=100):
@@ -699,7 +574,7 @@ class Mod(commands.Cog, name='Moderation'):
 
         args.search = max(0, min(2000, args.search)) # clamp from 0-2000
         await self.do_removal(ctx, args.search, predicate, before=args.before, after=args.after)
-
+        
     @commands.command()
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
@@ -720,46 +595,604 @@ class Mod(commands.Cog, name='Moderation'):
             embed.set_footer(text=f'Server: {ctx.guild.name}')
             embed.add_field(name='Bans', value=msg + '`', inline=True)
             await ctx.send(embed=embed)
-        else :
+        else:
             await ctx.send(f'{emote.xmark} There aret banned people!')
 
-    @commands.command()
-    @commands.has_permissions(manage_guild=True)
-    @commands.bot_has_permissions(manage_guild=True)
-    async def lock(self,ctx, *, reason= "No Reason Provided."):
-        '''
-        Locks The Channel For Server Deafult Role
-        '''
-        channel = ctx.channel
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"This will Lock This Channel For {ctx.guild.default_role}. Are you sure?")
-        if confirmation.confirmed:
-            overwrite = channel.overwrites_for(ctx.guild.default_role)
-            overwrite.send_messages = False
-            overwrite.view_channel = False
-            await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
-            embed = discord.Embed(title = 'Channel Lock' , description = f'_ _\n**{ctx.author}** Locked the Channel {channel.mention}\n\n\nReason - {reason}' , color = discord.Color.red())
-            await ctx.send(embed=embed)  
-        else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
 
-    @commands.command()
-    @commands.has_permissions(manage_guild=True)
-    @commands.bot_has_permissions(manage_guild=True)
-    async def unlock(self,ctx):
-        channel = ctx.channel
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"This will UnLock This Channel For {ctx.guild.default_role}. Are you sure?")
+####################################################################################################################
+#================================================ Role Commands ===================================================#
+####################################################################################################################
+
+    @commands.group(invoke_without_command=True, aliases=["addrole", "giverole"])
+    @commands.has_guild_permissions(manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
+    async def role(self, ctx, role: discord.Role, members: commands.Greedy[discord.Member]):
+        """
+        Add a role to one or multiple users.
+        """
+        if await role_checker(ctx, role):
+            reason = f"Action done by {ctx.author} (ID: {ctx.author.id})"
+            failed = []
+            for m in members:
+                if not role in m.roles:
+                    try:
+                        await m.add_roles(role, reason=reason)
+                    except:
+                        failed.append(str(m))
+                        continue
+
+            if len(failed) > 0:
+                return await ctx.error(f"I couldn't add roles to:\n{', '.join(failed)}")
+            else:
+                await ctx.success(f'Successfully Added Roles To {len(members)}')
+
+    @role.command(name="humans")
+    @commands.has_guild_permissions(manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
+    async def role_humans(self, ctx, *, role: discord.Role):
+        """Add a role to all human users."""
+        if await role_checker(ctx, role):
+            confirmation = ConfirmationPrompt(ctx, self.bot.color)
+            await confirmation.confirm(title = self.confirmater_title, description = f"{role.mention} will be added to all human users in the server.")    
+            if confirmation.confirmed:
+                members = list(filter(lambda x: not x.bot and role not in x.roles, ctx.guild.members))
+                await confirmation.update(description = f"{emote.loading} | Adding role to {len(members)} humans...")
+                reason = f"Action done by {ctx.author} (ID: {ctx.author.id})"
+                failed = 0
+                for m in members:
+                    try:
+                        await m.add_roles(role, reason=reason)
+                    except:
+                        failed += 1
+                        continue
+
+                if failed > 0:
+                    return await confirmation.update(description = f"I couldn't add roles to {failed} members.")
+
+                else:
+                    await confirmation.update(description = f"{emote.tick} | Successfully added role to {len(members)} members.")
+            else:
+                await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+
+    @role.command(name="bots")
+    @commands.has_guild_permissions(manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
+    async def role_bots(self, ctx, *, role: discord.Role):
+        """Add a role to all bot users."""
+        if await role_checker(ctx, role):
+            confirmation = ConfirmationPrompt(ctx, self.bot.color)
+            await confirmation.confirm(title = self.confirmater_title,description= f"{role.mention} will be added to all bots in the server.")    
+            if confirmation.confirmed:
+                members = list(filter(lambda x: x.bot and role not in x.roles, ctx.guild.members))
+                await confirmation.update(description = f"{emote.loading} | Adding role to {len(members)} bots...")
+                reason = f"Action done by {ctx.author} (ID: {ctx.author.id})"
+                failed = 0
+                for m in members:
+                    try:
+                        await m.add_roles(role, reason=reason)
+                    except:
+                        failed += 1
+                        continue
+
+                if failed > 0:
+                    return await confirmation.update(description = f"I couldn't add roles to {failed} bots.")
+
+                else:
+                    await confirmation.update(description = f"{emote.tick} | Successfully added role to {len(members)} bots.")
+            else:
+                await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+
+    @role.command(name="all")
+    @commands.has_guild_permissions(manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
+    async def role_all(self, ctx, *, role: discord.Role):
+        """Add a role to everyone on the server"""
+        if await role_checker(ctx, role):
+            confirmation = ConfirmationPrompt(ctx, self.bot.color)
+            await confirmation.confirm(title = self.confirmater_title, description = f"{role.mention} will be added to everyone in the server.")    
+            if confirmation.confirmed:
+                members = list(filter(lambda x: role not in x.roles, ctx.guild.members))
+                await confirmation.update(description = f"{emote.loading} | Adding role to {len(members)} members...")
+                reason = f"Action done by {ctx.author} (ID: {ctx.author.id})"
+                failed = 0
+                for m in members:
+                    try:
+                        await m.add_roles(role, reason=reason)
+                    except:
+                        failed += 1
+                        continue
+
+                if failed > 0:
+                    return await confirmation.update(description = f"I couldn't add roles to {failed} members.")
+
+                else:
+                    await confirmation.update(description = f"{emote.tick} | Successfully added role to {len(members)} members.")
+            else:
+                await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+
+
+    @commands.group(invoke_without_command=True, aliases=["removerole", "takerole"])
+    @commands.has_guild_permissions(manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
+    async def rrole(self, ctx, role: discord.Role, members: commands.Greedy[discord.Member]):
+        """Remove a role from one or multiple users."""
+        if await role_checker(ctx, role):
+            reason = f"Action done by {ctx.author} (ID: {ctx.author.id})"
+            failed = []
+            for m in members:
+                if role in m.roles:
+                    try:
+                        await m.remove_roles(role, reason=reason)
+                    except:
+                        failed.append(str(m))
+                        continue
+
+            if len(failed) > 0:
+                return await ctx.error(f"I couldn't remove roles from:\n{', '.join(failed)}")
+            else:
+                await ctx.success(f'Successfully Removed Roles To {len(members)}')
+
+    @rrole.command(name="humans")
+    @commands.has_guild_permissions(manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
+    async def rrole_humans(self, ctx, *, role: discord.Role):
+        """Remove a role from all human users."""
+        if await role_checker(ctx, role):
+            confirmation = ConfirmationPrompt(ctx, self.bot.color)
+            await confirmation.confirm(title =self.confirmater_title, description = f"{role.mention} will be removed from all human users in the server.")    
+            if confirmation.confirmed:
+                members = list(filter(lambda x: not x.bot and role in x.roles, ctx.guild.members))
+                await confirmation.update(description = f"{emote.loading} | Removing role from {len(members)} humans...")
+                reason = f"Action done by {ctx.author} (ID: {ctx.author.id})"
+                failed = 0
+                for m in members:
+                    try:
+                        await m.remove_roles(role, reason=reason)
+                    except:
+                        failed += 1
+                        continue
+
+                if failed > 0:
+                    return await confirmation.update(description = f"I couldn't remove roles to {failed} members.")
+
+                else:
+                    await confirmation.update(description = f"{emote.tick} | Successfully removed role to {len(members)} members.")
+            else:
+                await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+
+    @rrole.command(name="bots")
+    @commands.has_guild_permissions(manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
+    async def rrole_bots(self, ctx, *, role: discord.Role):
+        """Remove a role from all the bots."""
+        if await role_checker(ctx, role):
+            confirmation = ConfirmationPrompt(ctx, self.bot.color)
+            await confirmation.confirm(title = self.confirmater_title, description = f"{role.mention} will be removed from all bot users in the server.")    
+            if confirmation.confirmed:
+                members = list(filter(lambda x: x.bot and role in x.roles, ctx.guild.members))
+                await confirmation.update(description = f"{emote.loading} | Removing role from {len(members)} bots...")
+                reason = f"Action done by {ctx.author} (ID: {ctx.author.id})"
+                failed = 0
+                for m in members:
+                    try:
+                        await m.remove_roles(role, reason=reason)
+                    except:
+                        failed += 1
+                        continue
+
+                if failed > 0:
+                    return await confirmation.update(description = f"I couldn't remove roles to {failed} members.")
+
+                else:
+                    await confirmation.update(description = f"{emote.tick} | Successfully removed role to {len(members)} members.")
+            else:
+                await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+    @rrole.command(name="all")
+    @commands.has_guild_permissions(manage_roles=True)
+    @commands.bot_has_guild_permissions(manage_roles=True)
+    async def rrole_all(self, ctx, *, role: discord.Role):
+        """Remove a role from everyone on the server."""
+        if await role_checker(ctx, role):
+            confirmation = ConfirmationPrompt(ctx, self.bot.color)
+            await confirmation.confirm(title = self.confirmater_title, description = f"{role.mention} will be removed from everyone in the server.")    
+            if confirmation.confirmed:
+                members = list(filter(lambda x: role in x.roles, ctx.guild.members))
+                await confirmation.update(description = f"{emote.loading} | Removing role from {len(members)} members...")
+                reason = f"Action done by {ctx.author} (ID: {ctx.author.id})"
+                failed = 0
+                for m in members:
+                    try:
+                        await m.remove_roles(role, reason=reason)
+                    except:
+                        failed += 1
+                        continue
+
+                if failed > 0:
+                    return await confirmation.update(description = f"I couldn't remove roles to {failed} members.")
+
+                else:
+                    await confirmation.update(description = f"{emote.tick} | Successfully removed role to {len(members)} members.")
+            else:
+                await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+
+####################################################################################################################
+#================================================ Category Commands ===================================================#
+####################################################################################################################
+
+    @commands.group(invoke_without_command=True)
+    async def category(self, ctx):
+        """handle a category in you server"""
+        await ctx.send_help(ctx.command)
+
+    @category.command(name="delete")
+    @commands.has_permissions(manage_channels=True, manage_guild=True)
+    @commands.bot_has_permissions(manage_channels=True)
+    async def category_delete(self, ctx, *, category: Category):
+        """Delete a category and all the channels under it."""
+        if not len(category.channels):
+            return await ctx.error(f"**{category}** doesn't have any channels.")
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title, description = f"All channels under the category `{category}` will be deleted.")    
         if confirmation.confirmed:
-            overwrite = channel.overwrites_for(ctx.guild.default_role)
-            overwrite.send_messages = True
-            overwrite.view_channel = True
-            await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
-            embed = discord.Embed(title = 'Channel Unlock' , description = f'_ _\n**{ctx.author}** Unlocked the Channel {channel.mention}', color = discord.Color.red())
-            await ctx.send(embed=embed)
+            await confirmation.update(description = f"{emote.loading} | Deleteing {len(category.channels)} Channels")
+            failed, success = 0, 0
+            for channel in category.channels:
+                try:
+                    await channel.delete()
+                    success += 1
+                except:
+                    failed += 1
+                    continue
+
+            await category.delete()
+
+            with suppress(
+                discord.Forbidden, commands.ChannelNotFound, discord.NotFound, commands.CommandInvokeError
+            ):  # yes all these will be raised if the channel is from ones we deleted earlier.
+                await confirmation.update(description = f"Successfully deleted **{category}**. (Deleted: `{success}`, Failed: `{failed}`)")
+
         else:
-            await confirmation.update("Not confirmed", hide_author=True, color=0xff5555)
+            await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+
+    @category.command(name="hide")
+    @commands.has_permissions(manage_channels=True, manage_guild=True)
+    @commands.bot_has_permissions(manage_channels=True)
+    async def category_hide(self, ctx, *, category: Category):
+        """Hide a category and all its channels"""
+        if not len(category.channels):
+            return await ctx.error(f"**{category}** doesn't have any channels.")
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title, description = f"All channels under the category `{category}` will be hidden.")    
+        if confirmation.confirmed:
+            await confirmation.update(description = f"{emote.loading} | Hideing {len(category.channels)} Channels")
+            failed, success = 0, 0
+
+            for channel in category.channels:
+                try:
+                    perms = channel.overwrites_for(ctx.guild.default_role)
+                    perms.read_messages = False
+                    await channel.set_permissions(ctx.guild.default_role, overwrite=perms)
+                    success += 1
+                except:
+                    failed += 1
+                    continue
+
+            await confirmation.update(description = f"Successfully hidden category. (Hidden: `{success}`, Failed: `{failed}`)")
+
+        else:
+            await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+
+    @category.command(name="unhide")
+    @commands.has_permissions(manage_channels=True, manage_guild=True)
+    @commands.bot_has_permissions(manage_channels=True)
+    async def category_unhide(self, ctx, *, category: Category):
+        """Unhide a hidden category and all its channels."""
+        if not len(category.channels):
+            return await ctx.error(f"**{category}** doesn't have any channels.")
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title, description = f"All channels under the category `{category}` will be unhidden.")    
+        if confirmation.confirmed:
+            await confirmation.update(description = f"{emote.loading} | UnHideing {len(category.channels)} Channels")
+            failed, success = 0, 0
+
+            for channel in category.channels:
+                try:
+                    perms = channel.overwrites_for(ctx.guild.default_role)
+                    perms.read_messages = True
+                    await channel.set_permissions(ctx.guild.default_role, overwrite=perms)
+                    success += 1
+                except:
+                    failed += 1
+                    continue
+
+            await confirmation.update(description = f"Successfully unhidden **{category}**. (Unhidden: `{success}`, Failed: `{failed}`)")
+
+        else:
+            await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+
+    @category.command(name="recreate")
+    @commands.has_permissions(manage_channels=True, manage_guild=True)
+    @commands.bot_has_permissions(manage_channels=True)
+    async def category_recreate(self, ctx, *, category: Category):
+        """
+        Delete a category completely and create a new one
+        This will delete all the channels under the category and will make a new one with same perms and channels.
+        """
+        if not len(category.channels):
+            return await ctx.error(f"**{category}** doesn't have any channels.")
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title, description = f"All channels under the category `{category}` will be cloned and deleted.")    
+        if confirmation.confirmed:
+            await confirmation.update(description = f"{emote.loading} | ReCreating {len(category.channels)} Channels")
+            failed, success = 0, 0
+            for channel in category.channels:
+                if channel.permissions_for(ctx.me).manage_channels:
+                    try:
+                        position = channel.position
+                        clone = await channel.clone(reason=f"Action done by {ctx.author}")
+                        await channel.delete()
+                        await clone.edit(position=position)
+                        success += 1
+
+                    except:
+                        failed += 1
+                        continue
+
+            await confirmation.update(description = f"Successfully nuked **{category}**. (Cloned: `{success}`, Failed: `{failed}`)")
+
+        else:
+            await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+
+    @category.command(name="lock")
+    @commands.has_permissions(manage_channels=True, manage_guild=True)
+    @commands.bot_has_permissions(manage_channels=True)
+    async def category_lock(self, ctx, *, category: Category):
+        '''
+        Locks All The Channel Under The Category 
+        '''
+        if not len(category.channels):
+            return await ctx.error(f"**{category}** doesn't have any channels.")
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title, description = f"All channels under the category `{category}` will be locked.")    
+        if confirmation.confirmed:
+            await confirmation.update(description = f"{emote.loading} | Locking {len(category.channels)} Channels")
+            failed, success = 0, 0
+
+            for channel in category.channels:
+                try:
+                    perms = channel.overwrites_for(ctx.guild.default_role)
+                    perms.send_messages = False
+                    await channel.set_permissions(ctx.guild.default_role, overwrite=perms)
+                    success += 1
+                except:
+                    failed += 1
+                    continue
+
+            await confirmation.update(description = f"Successfully locked category. (Hidden: `{success}`, Failed: `{failed}`)")
+
+        else:
+            await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+
+    @category.command(name="unlock")
+    @commands.has_permissions(manage_channels=True, manage_guild=True)
+    @commands.bot_has_permissions(manage_channels=True)
+    async def category_unlock(self, ctx, *, category: Category):
+        '''Unlocks All The Channels Under Category'''
+        if not len(category.channels):
+            return await ctx.error(f"**{category}** doesn't have any channels.")
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title, description = f"All channels under the category `{category}` will be unlocked.")    
+        if confirmation.confirmed:
+            await confirmation.update(description = f"{emote.loading} | Unlocking {len(category.channels)} Channels")
+            failed, success = 0, 0
+
+            for channel in category.channels:
+                try:
+                    perms = channel.overwrites_for(ctx.guild.default_role)
+                    perms.send_messages = True
+                    await channel.set_permissions(ctx.guild.default_role, overwrite=perms)
+                    success += 1
+                except:
+                    failed += 1
+                    continue
+
+            await confirmation.update(description = f"Successfully unlocked category. (Hidden: `{success}`, Failed: `{failed}`)")
+
+        else:
+            await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+
+
+    @commands.group(invoke_without_command=True)
+    async def maintenance(self, ctx):
+        """Maintenance ON/ OFF for the server."""
+        await ctx.send_help(ctx.command)
+
+    @maintenance.command(name="on")
+    @commands.has_permissions(administrator=True)
+    @commands.bot_has_guild_permissions(manage_channels=True)
+    async def maintenace_on(self, ctx, *, role: discord.Role = None):
+        """
+        Turn ON maintenance mode.
+        You can turn on maintenance for a specific role too , the default role is everyone.
+        This will hide all the channels where `role` has `read_messages` permission enabled.
+        """
+        role = role or ctx.guild.default_role
+        
+        channels = list(filter(lambda x: x.overwrites_for(role).read_messages, ctx.guild.channels))
+        mine = sum(1 for i in filter(lambda x: x.permissions_for(ctx.me).manage_channels, (channels)))
+
+
+        if not (len(channels)):
+            return await ctx.error(f"**{role}** doesn't have `read_messages` enabled in any channel.")
+
+        elif not mine:
+            return await ctx.error(
+                f"`{sum(1 for i in channels)} channels` have read messages enabled. But unfortunately I don't permission to edit any of them."
+            )
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title, description = f"This Will Lock All The Channel in this Server")    
+        if confirmation.confirmed:
+            await confirmation.update(description = f"{emote.loading} | locking {len(channels)} Channels")
+            success, failed = [], 0
+            reason = f"Action done by -> {str(ctx.author)} ({ctx.author.id})"
+            for channel in channels:
+                overwrite = channel.overwrites_for(role)
+                overwrite.read_messages = False 
+                try:
+                    await channel.set_permissions(role, overwrite=overwrite, reason=reason)
+                    success.append(channel.id)
+                except:
+                    failed += 1
+                    continue    
+            await confirmation.update(description = f"Updated settings for `{len(success)} channels`.(`{failed}` failed)")
+            channels_create_confirmation = ConfirmationPrompt(ctx, self.bot.color)
+            await channels_create_confirmation.confirm(title = self.confirmater_title, description = f"This Will Create Maintainence Channels")    
+            if channels_create_confirmation.confirmed:
+                await channels_create_confirmation.update(description = f"{emote.loading} | Creating Maintainence Channels")
+                overwrites = {
+                    role: discord.PermissionOverwrite(read_messages=True, send_messages=True, read_message_history=True),
+                    ctx.guild.me: discord.PermissionOverwrite(
+                        read_messages=True, send_messages=True, read_message_history=True
+                    ),
+                }
+                await ctx.guild.create_text_channel(f"maintenance-chat", overwrites=overwrites, reason=reason)
+                await ctx.guild.create_voice_channel(f"maintenance-vc", overwrites=overwrites, reason=reason)
+                await channels_create_confirmation.update(f"Done")
+            else:
+                return await channels_create_confirmation.update(description = f"Ok! Not Creating Channels")
+        else:
+            await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
             
+
+
+    @maintenance.command(name="off")
+    @commands.bot_has_guild_permissions(manage_channels=True)
+    @commands.has_permissions(administrator=True)
+    async def maintenance_off(self, ctx, *, role: discord.Role = None):
+        """
+        Turn OFF maintenance mode.
+        If you turned ON maintenance mode for a specific role , you need to mention it here too.
+        """
+        role = role or ctx.guild.default_role
+        editable = await ctx.send(f'{emote.loading} | Unocking The Server')
+
+        success = 0
+        for channel in ctx.guild.channels:
+            if channel != None and channel.permissions_for(channel.guild.me).manage_channels:
+
+                perms = channel.overwrites_for(role)
+                perms.read_messages = True
+                await channel.set_permissions(role, overwrite=perms, reason="Lockdown timer complete!")
+                success += 1
+
+        await editable.edit(
+            content = f"{emote.tick} | Successfully changed settings for `{success}` channels. (`{sum(1 for i in ctx.guild.channels)}` were hidden.)"
+        )
+
+        tc = discord.utils.get(ctx.guild.channels, name=f"maintenance-chat")
+        vc = discord.utils.get(ctx.guild.channels, name=f"maintenance-vc")
+
+        if tc and vc:
+            await tc.delete()
+            await vc.delete()
+            await ctx.success(f"Deleted Maintainence Channels")
+
 def setup(bot):
     bot.add_cog(Mod(bot))
     # bot.add_cog(ModEvents(bot))
+
+'''
+####################################################################################################################
+#======================================== Lock, Unlock Commands ===================================================#
+####################################################################################################################
+
+    @commands.group(invoke_without_command=True, aliases=("lockdown",))
+    async def lock(self, ctx, channel: Optional[discord.TextChannel]):
+        """Lock a channel , category or the whole server."""
+        channel = channel or ctx.channel
+
+        if not channel.permissions_for(ctx.me).manage_channels:
+            return await ctx.error(f"I need `manage_channels` permission in **{channel}**")
+
+        elif not channel.permissions_for(ctx.author).manage_channels:
+            return await ctx.error(f"You need `manage channels` permission in **{channel}** to use this.")
+
+        perms = channel.overwrites_for(ctx.guild.default_role)
+        perms.send_messages = False
+        await channel.set_permissions(ctx.guild.default_role, overwrite=perms)
+
+        await ctx.success(f"Locked **{channel}** By: {ctx.author.mention}")
+
+    @lock.command(name="server", aliases=("guild",))
+    @commands.bot_has_guild_permissions(manage_channels=True)
+    @commands.has_permissions(manage_guild=True)
+    async def lock_server(self, ctx):
+        channels = list(filter(lambda x: x.overwrites_for(ctx.guild.default_role).send_messages, ctx.guild.channels))
+        mine = sum(1 for i in filter(lambda x: x.permissions_for(ctx.me).manage_channels, (channels)))
+
+        if not (len(channels)):
+            return await ctx.error(f"@everyone doesn't have `send_messages` enabled in any channel.")
+
+        elif not mine:
+            return await ctx.error(
+                f"`{sum(1 for i in channels)} channels` have send messages enabled. But I don't permission to edit any of them."
+            )
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = self.confirmater_title,description= f"This Will Set Send Messages To False For Everyone")    
+        if confirmation.confirmed:
+            await confirmation.update(description = f"{emote.loading} Locking Guild",)
+            success, failed = [], 0
+            reason = f"Action done by -> {str(ctx.author)} ({ctx.author.id})"
+            for channel in channels:
+                overwrite = channel.overwrites_for(ctx.guild.default_role)
+                overwrite.send_messages = False
+
+                try:
+                    await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=reason)
+                    success.append(channel.id)
+                except:
+                    failed += 1
+                    continue
+
+            await confirmation.update(
+                description = f"Locked down `{len(success)} channels` (Failed: `{failed}`)"
+            )
+        else:
+            await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
+
+    @commands.group(aliases=("unlockdown",), invoke_without_command=True)
+    async def unlock(self, ctx, *, channel: Optional[discord.TextChannel]):
+        channel = channel or ctx.channel
+
+        if not channel.permissions_for(ctx.me).manage_channels:
+            return await ctx.error(f"I need `manage_channels` permission in **{channel}**")
+
+        elif not channel.permissions_for(ctx.author).manage_channels:
+            return await ctx.error(f"You need `manage channels` permission in **{channel}** to use this.")
+
+        perms = channel.overwrites_for(ctx.guild.default_role)
+        perms.send_messages = True
+        await channel.set_permissions(ctx.guild.default_role, overwrite=perms)
+
+        await ctx.success(f"Unlocked **{channel}**")
+
+
+    @unlock.command(name="server", aliases=("guild",))
+    @commands.has_permissions(manage_guild=True)
+    @commands.bot_has_guild_permissions(manage_channels=True)
+    async def unlock_guild(self, ctx):
+        success = 0
+        for channel in ctx.guild.channels:
+            if channel != None and channel.permissions_for(ctx.me).manage_channels:
+                perms = channel.overwrites_for(channel.guild.default_role)
+                perms.send_messages = True
+                await channel.set_permissions(
+                    channel.guild.default_role, overwrite=perms
+                )
+                success += 1
+        await ctx.success(
+            f"Successfully unlocked `{success}` channels.)"
+        )
+
+    
+'''
