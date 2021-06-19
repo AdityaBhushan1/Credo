@@ -5,7 +5,7 @@ from .sutils import CustomEditMenu,DaysEditorMenu,delete_denied_message
 from ..utils.paginitators import Pages
 from prettytable import PrettyTable,ORGMODE
 from datetime import datetime
-from disputils import  BotConfirmation
+from ..utils.confirmater import ConfirmationPrompt
 from .events import EsportsListners
 from ..utils import expectations
 from pytz import timezone
@@ -16,9 +16,14 @@ class Esports(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    """Handles the bot's esports configuration system.
+    """
 
     @commands.group(invoke_without_command = True,aliases = ['s','sm','scirms-manager'])
     async def smanager(self,ctx):
+        """
+        Handles The SManager Settings For This Guild
+        """
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
@@ -401,15 +406,15 @@ class Esports(commands.Cog):
         if not channel:
             return await ctx.send(f'{emote.error} | Thats Not Correct Custom ID, To Get Valid Custom ID Use `{ctx.prefix}smanager config`')
 
-        confirmation = BotConfirmation(ctx, self.bot.color)
-        await confirmation.confirm(f"Would you like to Delete Custom Info With Custom Id = `{custom_id}`")
+        confirmation = ConfirmationPrompt(ctx, self.bot.color)
+        await confirmation.confirm(title = 'Are You Sure?',description = f"Would you like to Delete Custom Info With Custom Id = `{custom_id}`")
         if confirmation.confirmed:
             custom_num = scrims_manager['custom_setuped'] - 1
             await self.bot.db.execute('DELETE FROM smanager.custom_data WHERE c_id = $1',custom_id)
             await self.bot.db.execute('UPDATE server_configs SET custom_setuped = $1 WHERE guild_id = $2',custom_num,ctx.guild.id)
-            await confirmation.update(f"{emote.tick} | Successfull Deleted Custom Info With Custom Id = `{custom_id}`")
+            await confirmation.update(description = f"{emote.tick} | Successfull Deleted Custom Info With Custom Id = `{custom_id}`")
         else:
-            return await confirmation.update(f"Not Confirmed", hide_author=True, color=self.bot.color)
+            return await confirmation.update(description = f"Not Confirmed", hide_author=True, color=self.bot.color)
 
 
     @smanager.command(name = 'toogle-custom')
@@ -895,7 +900,7 @@ class Esports(commands.Cog):
 ####################################################################################################################
 #======================================================== Easy Tagging ============================================#
 ####################################################################################################################
-'''
+
     @commands.group(invoke_without_command = True,aliases = ['ez_tag','eztag','ez-tag','etag'])
     async def easytag(self,ctx):
         """
@@ -941,7 +946,7 @@ class Esports(commands.Cog):
             await ctx.db.execute('UPDATE smanager.ez_tag SET toggle = $1 WHERE guild_id = $2',False,ctx.guild.id)
             return await ctx.success('Successfully Turned Off Easy Tagging')
 
-'''
+
 
 ####################################################################################################################
 #===================================================== Tournament Manager =========================================#
