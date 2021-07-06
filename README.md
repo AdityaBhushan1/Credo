@@ -11,7 +11,7 @@
     A very powerful, multipurpose bot!
     <br />
     <br />
-    <a href="https://discord.gg/YSJVbxj9nw">Discord Server</a>
+    <a href="https://discord.gg/qx4NPMAAfm">Discord Server</a>
     ·
     <a href="https://discord.com/oauth2/authorize?client_id=782867672626364456&permissions=2147483647&scope=bot">Invite Tea Bot</a>
     <br/>
@@ -55,4 +55,4 @@ I would prefer if you don't run an instance of my bot. Just [`Invite The Bot`](h
 # How do I contribute?
 
 If you are looking forward to contribute to the project, we welcome you. kindly open an issue first for discussion.
-It's also a good option to join the [`Support Server`](https://discord.gg/aBM5xz6) and get into touch with anyone having `@Tea Bot Developer` role.
+It's also a good option to join the [`Support Server`](https://discord.gg/qx4NPMAAfm) and get into touch with anyone having `@Tea Bot Developer` role.
