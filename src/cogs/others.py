@@ -79,7 +79,7 @@ class Other(commands.Cog, name='Other'):
     @commands.command(aliases = ['src'])
     async def source(self, ctx: Context, *, search: str = None):
         """Refer to the source code of the bot commands."""
-        source_url = "https://github.com/AQUATRIX-DEVELOPMENT/Tea-Bot"
+        source_url = "https://github.com/AQUATRIX-DEVELOPMENT/Credo"
 
         if search is None:
             return await ctx.send(source_url)
