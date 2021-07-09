@@ -1,11 +1,11 @@
-![discord.py Version](https://img.shields.io/badge/lib-discord.py%201.7.0-blue) ![Language](https://img.shields.io/badge/lang-Python%203.8.6-green) [![Discord Bots](https://top.gg/api/widget/status/782867672626364456.svg)](https://top.gg/bot/782867672626364456) [![Discord Bots](https://top.gg/api/widget/servers/782867672626364456.svg)](https://top.gg/bot/782867672626364456) [![Discord Bots](https://top.gg/api/widget/upvotes/782867672626364456.svg)](https://top.gg/bot/782867672626364456) [![Discord Bots](https://top.gg/api/widget/owner/782867672626364456.svg)](https://top.gg/bot/782867672626364456) ![Made with](https://img.shields.io/badge/Made%20With-LOVE-%23fa4b4b?style=flat-square)
+ ![discord.py Version](https://img.shields.io/badge/lib-discord.py%201.7.0-blue) ![Language](https://img.shields.io/badge/lang-Python%203.8.6-green) <!--[![Discord Bots](https://top.gg/api/widget/status/782867672626364456.svg)](https://top.gg/bot/782867672626364456) [![Discord Bots](https://top.gg/api/widget/servers/782867672626364456.svg)](https://top.gg/bot/782867672626364456) [![Discord Bots](https://top.gg/api/widget/upvotes/782867672626364456.svg)](https://top.gg/bot/782867672626364456) [![Discord Bots](https://top.gg/api/widget/owner/782867672626364456.svg)](https://top.gg/bot/782867672626364456)--> ![Made with](https://img.shields.io/badge/Made%20With-LOVE-%23fa4b4b?style=flat-square) 
 ![MIT License](https://img.shields.io/github/license/Arthurdw/Reaction-Role?style=flat-square)
 
 <br />
 <p align="center">
-    <img src="https://cdn.discordapp.com/avatars/782867672626364456/64eabde0064a9e15e4d6cc2a0570c5e7.jpeg?size=1024" alt="Logo" width="80" height="80">
+    <img src="https://cdn.discordapp.com/avatars/862957770599825418/0fa86b9cc12348c1c7c2c5e7a4b0c308.jpeg?size=1024" alt="Logo" width="80" height="80">
 
-  <h3 align="center">Tea Bot</h3>
+  <h3 align="center">Credo</h3>
 
   <p align="center">
     A very powerful, multipurpose bot!
@@ -13,7 +13,7 @@
     <br />
     <a href="https://discord.gg/qx4NPMAAfm">Discord Server</a>
     ·
-    <a href="https://discord.com/oauth2/authorize?client_id=782867672626364456&permissions=2147483647&scope=bot">Invite Tea Bot</a>
+    <a href=https://discord.com/oauth2/authorize?client_id=862957770599825418&permissions=2147483647&scope=bot">Invite Credo Bot</a>
     <br/>
 
   </p>
@@ -36,8 +36,8 @@
 ## Step 3
 #### Setting Up Data Base:
 ##### 1. Open Terminal And Connect To Your Postgres User In PSQL In Your Terminal
-##### 2. Run This `CREATE DATABASE teabotdb;` To Create Db For Bot
-##### 3. Then Change Database TO `teabotdb` In PSQL 
+##### 2. Run This `CREATE DATABASE <database name>;` To Create Db For Bot
+##### 3. Then Change Database To You New Databse In PSQL 
 ##### 4. Then Open `schemas.sql` And Then Run All The Command In That File.
 
 ## Step 4
@@ -48,7 +48,7 @@
 #### You Have Succefulluy Setuped The Bot
 
 ## Note: 
-I would prefer if you don't run an instance of my bot. Just [`Invite The Bot`](https://discord.com/oauth2/authorize?client_id=782867672626364456&permissions=2147483647&scope=bot) on your server. The source here is provided for educational purposes for discord.py.
+I would prefer if you don't run an instance of my bot. Just [`Invite The Bot`](https://discord.com/oauth2/authorize?client_id=862957770599825418&permissions=2147483647&scope=bot) on your server. The source here is provided for educational purposes for discord.py.
 
 <!-- CONTRIBUTION -->
 
