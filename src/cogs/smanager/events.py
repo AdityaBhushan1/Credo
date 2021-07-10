@@ -25,7 +25,7 @@ class EsportsListners(commands.Cog):
             # print('not scrims')
             return 
 
-        elif "credo-smanger" in [role.name for role in message.author.roles]:
+        elif "credo-smanager" in [role.name for role in message.author.roles]:
             # print('bot,role')
             return
 
@@ -387,7 +387,7 @@ class EsportsListners(commands.Cog):
         if not data:
             return
         
-        if message.author.bot or "teabot-smanger" in [role.name for role in message.author.roles]:
+        if message.author.bot or "credo-smanager" in [role.name for role in message.author.roles]:
             return
 
         mentions = len([mem for mem in message.mentions])
