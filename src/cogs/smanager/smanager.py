@@ -43,7 +43,7 @@ class Esports(commands.Cog):
             start_msg = await ctx.send(f'{emote.loading} | Setting Up Scrims Manager')
             guild=ctx.guild
             permissions = discord.Permissions(send_messages=True, read_messages=True,administrator=True)
-            sm_role = await guild.create_role(name='credo-smanger',permissions=permissions,colour=self.bot.color)
+            sm_role = await guild.create_role(name='credo-smanager',permissions=permissions,colour=self.bot.color)
             sm_banned_role = await guild.create_role(name='credo-sm-banned')
             guild = ctx.guild
             member = ctx.author
