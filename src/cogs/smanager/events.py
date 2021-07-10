@@ -383,6 +383,8 @@ class EsportsListners(commands.Cog):
 
     @commands.Cog.listener(name = 'on_message')
     async def on_tag_check_message(self,message):
+        if not message.guild or message.author.bot:
+            return
         data = await self.bot.db.fetchrow('SELECT * FROM smanager.tag_check WHERE ch_id = $1 AND toggle != $2',message.channel.id,False)
         if not data:
             return
