@@ -40,11 +40,11 @@ class Other(commands.Cog, name='Other'):
     @commands.command()
     async def invite(self, ctx):
         em = discord.Embed(title="**Wanna invite <:bot:784780560278224906> to your server? It's really very simple to do so :-**",
-                           description="[Invite From Here](https://discord.com/oauth2/authorize?client_id=782867672626364456&permissions=2147483647&scope=bot)", color=discord.Colour.green())
+                           description="[Invite From Here](https://discord.com/oauth2/authorize?client_id=862957770599825418&permissions=2147483647&scope=bot)", color=discord.Colour.green())
         em.add_field(name='**You can also join our Support Server** <:discordserver:784780505048023080>',
                      value='[Click Here To Join](https://discord.gg/YSJVbxj9nw)')
-        em.add_field(name='**Important Links** <:Link:784780662829088818>',
-                     value='<:devloper:784780468440662016> [Devloper](https://github.com/aditya-9457) | [Vote](https://top.gg/bot/782867672626364456/vote)')
+#         em.add_field(name='**Important Links** <:Link:784780662829088818>',
+#                      value='<:devloper:784780468440662016> [Devloper](https://github.com/TierGamerpy) | [Vote](https://top.gg/bot/782867672626364456/vote)')
         await ctx.send(embed=em)
 
     @commands.command()
