@@ -103,7 +103,7 @@ class BotSettings(commands.Cog):
         guild.me: discord.PermissionOverwrite(read_messages=True,send_messages=True),
         member: discord.PermissionOverwrite(read_messages=True,send_messages=True)
     }
-        channel = await guild.create_text_channel('Tea Bot Private', overwrites=overwrites)
+        channel = await guild.create_text_channel('credo-private', overwrites=overwrites)
         record = await ctx.db.fetch("SELECT * FROM public.brodcast WHERE guild_id = $1", ctx.guild.id)
         data = await ctx.db.fetch("SELECT * FROM public.server_configs WHERE guild_id = $1", ctx.guild.id)
         if not record:
@@ -147,7 +147,7 @@ class BotSettings(commands.Cog):
         data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
         if data == False:
             raise expectations.NotSetup
-        botrole = discord.utils.get(ctx.guild.roles,name="TEA BOT")
+        botrole = discord.utils.get(ctx.guild.roles,name="Credo")
         if role.position > botrole.position:
             await ctx.send(f'{emote.error} | My Role Is Not Above The Mentioned Role, Please Put My Role Above The Mentioned Role And Try Again')
             return
@@ -166,7 +166,7 @@ class BotSettings(commands.Cog):
         data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
         if data == False:
             raise expectations.NotSetup
-        botrole = discord.utils.get(ctx.guild.roles,name="TEA BOT")
+        botrole = discord.utils.get(ctx.guild.roles,name="Credo")
         if role.position > botrole.position:
             await ctx.send(f'{emote.error} | My Role Is Not Above The Mentioned Role, Please Put My Role Above The Mentioned Role And Try Again')
             return

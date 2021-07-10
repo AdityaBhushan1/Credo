@@ -18,7 +18,7 @@ def get_prefix(bot, msg):
     else:
         base.extend(bot.prefixes.get(msg.guild.id,[config.prefix]))
     return base
-class TeaBot(commands.Bot):
+class Credo(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(
             command_prefix=get_prefix,
@@ -69,7 +69,7 @@ class TeaBot(commands.Bot):
         else:
             await self.prefixes.put(guild.id, sorted(set(prefixes), reverse=True))
 
-bot = TeaBot()
+bot = Credo()
 
 # cogs
 extensions = [

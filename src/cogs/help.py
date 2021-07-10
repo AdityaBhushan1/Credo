@@ -100,7 +100,7 @@ class HelpMenu(TeaPages):
 
         embed = discord.Embed(title='Using the bot', colour= 0x4ca64c)
         embed.title = 'Using the bot'
-        embed.description = '> Hello! Welcome to the tea bot help page.'
+        embed.description = '> Hello! Welcome to the Credo help page.'
 
         entries = (
             ('<argument>', '> This means the argument is **required**.'),

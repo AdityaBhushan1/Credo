@@ -25,11 +25,11 @@ class EsportsListners(commands.Cog):
             # print('not scrims')
             return 
 
-        elif "teabot-smanger" in [role.name for role in message.author.roles]:
+        elif "credo-smanger" in [role.name for role in message.author.roles]:
             # print('bot,role')
             return
 
-        elif "teabot-sm-banned" in [role.name for role in message.author.roles]:
+        elif "credo-sm-banned" in [role.name for role in message.author.roles]:
             if scrims['auto_delete_on_reject'] == True:
                 self.bot.loop.create_task(delete_denied_message(message))
                 return
@@ -289,14 +289,14 @@ class EsportsListners(commands.Cog):
 
     @commands.Cog.listener()
     async def on_correct_reg_logs(self,message,team_name):
-        log_ch = discord.utils.get(message.guild.channels, name='teabot-sm-logs')
+        log_ch = discord.utils.get(message.guild.channels, name='credo-sm-logs')
         em = discord.Embed(title = f'🛠️ SuccessFull Registration 🛠️',description = f'{emote.tick} | Registration For Team Name = `{team_name}` Is Successfully Accepeted',color=self.bot.color)
         await log_ch.send(embed = em)
 
     @commands.Cog.listener()
     async def on_reg_closed_logs(self,customid,customname,customnum,guild_id):
         guild = self.bot.get_guild(guild_id)
-        log_channel = discord.utils.get(guild.channels, name='teabot-sm-logs')
+        log_channel = discord.utils.get(guild.channels, name='credo-sm-logs')
         msg = discord.Embed(title = f'🛠️ Registration Closed 🛠️', description = f'{emote.tick} | Succesfully Closed Registration For Custom ID = `{customid}`, Custom Number = `{customnum}`, Custom Name = `{customname}`',color=self.bot.color)
         await log_channel.send(embed=msg)
 
@@ -307,7 +307,7 @@ class EsportsListners(commands.Cog):
         # print('entered on_reg_open_msg_logs')
         ch = await self.bot.fetch_channel(ch_id)
         data = await self.bot.db.fetchrow(f"SELECT * FROM smanager.custom_data WHERE reg_ch = $1",ch.id)
-        log_ch = discord.utils.get(guild.channels, name='teabot-sm-logs')
+        log_ch = discord.utils.get(guild.channels, name='credo-sm-logs')
         # print(log_ch)
         custom_id = data['c_id']
         custom_num = data['custom_num']
@@ -319,14 +319,14 @@ class EsportsListners(commands.Cog):
     @commands.Cog.listener()
     async def on_deny_reg_logs(self,message,guild_id):
         guild = self.bot.get_guild(guild_id)
-        log_channel = discord.utils.get(guild.channels, name='teabot-sm-logs')
+        log_channel = discord.utils.get(guild.channels, name='credo-sm-logs')
         em = discord.Embed(title = '🛠️ Registration Denied 🛠️' ,description = f'{message}',color=self.bot.color)
         await log_channel.send(embed=em)
 
     @commands.Cog.listener()
     async def on_cannot_open_reg(self,guild_id,message:str):
         guild = self.bot.get_guild(guild_id)
-        log_channel = discord.utils.get(guild.channels, name='teabot-sm-logs')
+        log_channel = discord.utils.get(guild.channels, name='credo-sm-logs')
         em = discord.Embed(title = '🛠️ Cannot Open Registartion 🛠️' ,description = f'{message}',color=self.bot.color)
         await log_channel.send(embed=em)
 
@@ -345,7 +345,7 @@ class EsportsListners(commands.Cog):
                     await self.bot.db.execute("UPDATE smanager.custom_data SET is_running = $1,is_registeration_done_today = $2 WHERE c_id = $3 AND is_running = $4",False,True,data['c_id'],True)
                 else:
                     pass
-                log_channel = discord.utils.get(channel.guild.channels, name='teabot-sm-logs')
+                log_channel = discord.utils.get(channel.guild.channels, name='credo-sm-logs')
                 em = discord.Embed(description = f"The Regitration Channel For Scrims With Id `{data['c_id']}` Has Been Deleted And Scrims Is Toggled Off Kinldy Set New Channel And Toggle It On",color = self.bot.color)
                 await log_channel.send(embed=em)
             else:pass
@@ -356,7 +356,7 @@ class EsportsListners(commands.Cog):
         else:
             if channel.id == int(slot_ch['ch_id']):
                 await self.bot.dd.execute('DELETE FROM smanager.custom_data WHERE ch_id = $1',channel.id)
-                log_channel = discord.utils.get(channel.guild.channels, name='teabot-sm-logs')
+                log_channel = discord.utils.get(channel.guild.channels, name='credo-sm-logs')
                 em = discord.Embed(description = f"The Tag Check Channel Has Been Deleted Kindly Setup Tag Check Again With New Channel",color = self.bot.color)
                 await log_channel.send(embed=em)
             else:pass
@@ -367,7 +367,7 @@ class EsportsListners(commands.Cog):
         else:
             if channel.id == int(slot_ch['ch_id']):
                 await self.bot.dd.execute('DELETE FROM smanager.ez_tag WHERE ch_id = $1',channel.id)
-                log_channel = discord.utils.get(channel.guild.channels, name='teabot-sm-logs')
+                log_channel = discord.utils.get(channel.guild.channels, name='credo-sm-logs')
                 em = discord.Embed(description = f"The Easy Tag Channel Has Been Deleted Kindly Setup Easy Tag Again With New Channel",color = self.bot.color)
                 await log_channel.send(embed=em)
             else:pass
@@ -385,9 +385,6 @@ class EsportsListners(commands.Cog):
     async def on_tag_check_message(self,message):
         data = await self.bot.db.fetchrow('SELECT * FROM smanager.tag_check WHERE ch_id = $1 AND toggle != $2',message.channel.id,False)
         if not data:
-            return
-
-        if message.author.bot or "teabot-smanger" in [role.name for role in message.author.roles]:
             return
 
         mentions = len([mem for mem in message.mentions])

@@ -15,7 +15,7 @@ class Error(commands.Cog,name='Error'):
         if hasattr(ctx.command, 'on_error'):
             return
             
-        elif isinstance(error, expectations.TeaBoterror):
+        elif isinstance(error, expectations.Credoerror):
             return await ctx.error(f'{error.__str__().format(ctx=ctx)}')
             
         elif isinstance(error, commands.MissingPermissions):

@@ -261,7 +261,7 @@ class Owner_Commands(commands.Cog):
     @commands.is_owner()
     async def brodcast(self,ctx,*,args):
         """
-        Brodcasts This Message To Guild Having Tea Bot Setup
+        Brodcasts This Message To Guild Having Credo Setup
         """
         channel_id = []
         record = await self.bot.db.fetch('SELECT channel_id FROM public.brodcast')   
@@ -274,7 +274,7 @@ class Owner_Commands(commands.Cog):
             channel = self.bot.get_channel(channels)
             to_send.append(channel)
             start = time.time()
-            em = discord.Embed(title = '📢 | Tea Bot Announcement | 📢',description=args,color=self.bot.color)
+            em = discord.Embed(title = '📢 | Credo Announcement | 📢',description=args,color=self.bot.color)
             em.set_author(name="TierGamerpy#0252",icon_url=ctx.author.avatar_url)
             try:
                 await channel.send(embed = em)

@@ -42,7 +42,7 @@ class SmanagerTasks(commands.Cog):
             role = guild.get_role(role_id)
             for m in role.members:
                 try:
-                    await m.remove_roles(role,reason = 'Teabot Scims Mnagaer Autoclean')
+                    await m.remove_roles(role,reason = 'Credo Scims Mnagaer Autoclean')
                 except:
                     continue
         await self.bot.db.execute('UPDATE smanager.custom_data SET is_registeration_done_today = $1 WHERE is_registeration_done_today = $2',False,True)

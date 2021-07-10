@@ -28,9 +28,9 @@ class Other(commands.Cog, name='Other'):
             ram_usage = psutil.virtual_memory()[2]
             operatingsystem = platform.system()
             latency = round(self.bot.latency*1000)
-            e = discord.Embed(title = 'Tea Bot Status', description = f'Bot Name : `Tea Bot#9256`\n`Bot ID: 782875333144870932`',color = self.bot.color,inline=True)
+            e = discord.Embed(title = 'Credo Status', description = f'Bot Name : `Credo`\n`Bot ID: 862957770599825418`',color = self.bot.color,inline=True)
             e.add_field(name = 'General', value = f'```py\nSevers: {serverCount}\nUsers: {memberCount}\n```',inline=True)
-            e.add_field(name = 'Other', value = f'```py\nPython Version: {pythonVersion}\nDiscord.Py Version: {dpyVersion}\nTea Bot Version: 3.4\nCommands: {commandscount}\nLatency: {latency}\n```',inline=True)
+            e.add_field(name = 'Other', value = f'```py\nPython Version: {pythonVersion}\nDiscord.Py Version: {dpyVersion}\nCredo Version: 3.4\nCommands: {commandscount}\nLatency: {latency}\n```',inline=True)
             e.add_field(name = 'System', value = f'```py\nOs: {operatingsystem}\nCPU Usage: {cpu_usage}%\nRam Usage: {ram_usage}%\n```',inline=True)
             e.add_field(name = 'Creator', value = f'```\nTier Gamer#0252 [749550694469599233]\n```',inline=True)
             e.set_thumbnail(url = self.bot.logo)
@@ -106,7 +106,7 @@ class Other(commands.Cog, name='Other'):
 
     @commands.command(aliases=["cs"])
     async def codestats(self, ctx: Context):
-        """See the code statictics of tea bot."""
+        """See the code statictics of Credo."""
         ctr = Counter()
         for ctr["files"], f in enumerate(glob("./**/*.py", recursive=True)):
             with open(f, encoding="UTF-8") as fp:
@@ -120,7 +120,7 @@ class Other(commands.Cog, name='Other'):
                     ctr["docstrings"] += line.startswith('"""') + line.startswith("'''")
 
             embed=discord.Embed(
-                title="Tea Bot Code Stats",
+                title="Credo Code Stats",
                 description="\n".join([f"**{k.capitalize()}:** {v}" for k, v in ctr.items()]),
                 color = self.bot.color
             )

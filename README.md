@@ -19,7 +19,7 @@
   </p>
 </p>
 
-# Setting Up Tea Bot
+# Setting Up Credo
 ##### Note: The Given Steps Are For A Linux Machine If You Have Some Knowledege Of Programming you can set it up for any other machine
 ## Step 1
 #### Create A Virtual Enviroment:

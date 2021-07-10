@@ -33,7 +33,7 @@ class Esports(commands.Cog):
     @commands.bot_has_permissions(manage_channels=True,manage_roles=True)
     async def smanager_setup(self,ctx):
         '''
-        Setups The Tea Bot Scrims Manager In Your Server
+        Setups The Credo Scrims Manager In Your Server
         '''
         data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
         if data == False:
@@ -43,8 +43,8 @@ class Esports(commands.Cog):
             start_msg = await ctx.send(f'{emote.loading} | Setting Up Scrims Manager')
             guild=ctx.guild
             permissions = discord.Permissions(send_messages=True, read_messages=True,administrator=True)
-            sm_role = await guild.create_role(name='teabot-smanger',permissions=permissions,colour=self.bot.color)
-            sm_banned_role = await guild.create_role(name='teabot-sm-banned')
+            sm_role = await guild.create_role(name='credo-smanger',permissions=permissions,colour=self.bot.color)
+            sm_banned_role = await guild.create_role(name='credo-sm-banned')
             guild = ctx.guild
             member = ctx.author
             overwrites = {
@@ -53,7 +53,7 @@ class Esports(commands.Cog):
             member: discord.PermissionOverwrite(read_messages=True,send_messages=True),
             sm_role:discord.PermissionOverwrite(read_messages=True,send_messages=True)
         }
-            smlogchannel = await guild.create_text_channel('teabot-sm-logs', overwrites=overwrites)
+            smlogchannel = await guild.create_text_channel('Credo-sm-logs', overwrites=overwrites)
             try:
                 await ctx.author.add_roles(sm_role)
             except:
@@ -79,7 +79,7 @@ class Esports(commands.Cog):
 
 
     @smanager.command(name='setup-custom')
-    @commands.has_role('teabot-smanger')
+    @commands.has_role('credo-smanger')
     # @is_smanager_setuped()
     async def smanager_setup_custom(self,ctx):
         """
@@ -334,7 +334,7 @@ class Esports(commands.Cog):
             return
 
     @smanager.command(name='open')
-    @commands.has_role('teabot-smanger')
+    @commands.has_role('credo-smanger')
     # @is_smanager_setuped()
     async def smanager_open(self,ctx,*,custom_id:int):
         """
@@ -364,7 +364,7 @@ class Esports(commands.Cog):
         await ctx.send(f'{emote.tick}')
 
     @smanager.command(name='close')
-    @commands.has_role('teabot-smanger')
+    @commands.has_role('credo-smanger')
     # @is_smanager_setuped()
     async def smanager_close(self,ctx,*,custom_id:int):
         """
@@ -395,7 +395,7 @@ class Esports(commands.Cog):
         await ctx.send(f'{emote.tick}')
 
     @smanager.command(name='delete')
-    @commands.has_role('teabot-smanger')
+    @commands.has_role('credo-smanger')
     # @is_smanager_setuped()
     async def smanager_delete(self,ctx,*,custom_id:int):
         """Deletes The Setuped Custom"""
@@ -418,7 +418,7 @@ class Esports(commands.Cog):
 
 
     @smanager.command(name = 'toogle-custom')
-    @commands.has_role('teabot-smanger')
+    @commands.has_role('credo-smanger')
     async def smanager_toggle_custom(self,ctx,custom_id:int):
         '''
         Toggle Scrims Manger Custom
@@ -442,7 +442,7 @@ class Esports(commands.Cog):
 
     @smanager.command(name='edit-custom')
     # @is_smanager_setuped()
-    @commands.has_role('teabot-smanger')
+    @commands.has_role('credo-smanger')
     async def smanager_edit_custom(self,ctx,*,custom_id:int):
         """Edit The Custom Data"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
@@ -462,7 +462,7 @@ class Esports(commands.Cog):
     #======= days editor ===========#
     @smanager.command(name='edit-day')
     # @is_smanager_setuped()
-    @commands.has_role('teabot-smanger')
+    @commands.has_role('credo-smanger')
     async def smanager_edit_day(self,ctx,*,custom_id:int):
         """Edit The Custom Open Days"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
@@ -477,7 +477,7 @@ class Esports(commands.Cog):
         await menu.start(ctx)
     #======= open-message editor ===========#
     @smanager.command(name='edit-open-message')
-    @commands.has_role('teabot-smanger')
+    @commands.has_role('credo-smanger')
     async def smanager_edit_open_message(self,ctx,*,custom_id:int):
         """Edits The Custom Open Message"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
@@ -592,7 +592,7 @@ class Esports(commands.Cog):
 
     #======= close-message editor ===========#
     @smanager.command(name='edit-close-message')
-    @commands.has_role('teabot-smanger')
+    @commands.has_role('credo-smanger')
     async def smanager_edit_close_message(self,ctx,*,custom_id:int):
         """Edits The Custom Close Message"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
@@ -690,7 +690,7 @@ class Esports(commands.Cog):
                         return
     #======= slotlist-embed-format ===========#
     # @smanager.command(name='edit-slotlist-embed-format')
-    # @commands.has_role('teabot-smanger')
+    # @commands.has_role('credo-smanger')
     # async def smanager_edit_slotlist_embed_format(self,ctx,*,custom_id:int):
     #     """Edits The Custom Slotlist Format"""
     #     #TODO Complete This
@@ -703,7 +703,7 @@ class Esports(commands.Cog):
 
 
     @smanager.command(name='send-slotslist')
-    @commands.has_role('teabot-smanger')
+    @commands.has_role('credo-smanger')
     async def smanager_send_slotslist(self,ctx,*,custom_id:int):
         """
         Send's The Slotlist To Setuped Channel
@@ -757,7 +757,7 @@ class Esports(commands.Cog):
             return
 
     @smanager.command(name='config')
-    @commands.has_role('teabot-smanger')
+    @commands.has_role('credo-smanger')
     async def smanager_config(self,ctx):
         """See The Scrims Manager Configuration For This Server"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
@@ -830,7 +830,7 @@ class Esports(commands.Cog):
             await ctx.send_help(ctx.command)
     
     @tag_check.command(name = 'set')
-    @commands.has_role('teabot-smanger')
+    @commands.has_role('credo-smanger')
     async def tag_check_set(self,ctx,check_channel:discord.TextChannel,*,mentions_required:int):
         '''
         Setups The Tag Check In You Server
@@ -850,7 +850,7 @@ class Esports(commands.Cog):
         await editable.edit(content = f'{emote.tick} | successfully setuped tag check in {check_channel.mention}')
 
     @tag_check.command(name = 'toggle')
-    @commands.has_role('teabot-smanger')
+    @commands.has_role('credo-smanger')
     async def tag_check_toggle(self,ctx):
         '''
         Toggles This Tag Check
@@ -917,7 +917,7 @@ class Esports(commands.Cog):
         """
         data = await self.bot.db.fetchrow('SELECT * FROM smanager.ez_tag WHERE guild_id = $1',ctx.guild.id)
         editable = await ctx.send(f'{emote.loading} | Setting Up Easy Tag')
-        em = discord.Embed(title = "**__Tea Bot Easy Tagging__**",color = self.bot.color)
+        em = discord.Embed(title = "**__Credo Easy Tagging__**",color = self.bot.color)
         em.description = f"""
             Unable to mention team mates while registering in scrims? Do not worry, we are here to help! Mention your team mates below and get their ID.\n\nUse the ID you get below in your registration format. This ID will tag yourteam mates and your registration will be successfully every single time.\n\nYou have 10 seconds to copy the ID
         """
