@@ -79,7 +79,7 @@ class Esports(commands.Cog):
 
 
     @smanager.command(name='setup-custom')
-    @commands.has_role('credo-smanger')
+    @commands.has_role('credo-smanager')
     # @is_smanager_setuped()
     async def smanager_setup_custom(self,ctx):
         """
@@ -334,7 +334,7 @@ class Esports(commands.Cog):
             return
 
     @smanager.command(name='open')
-    @commands.has_role('credo-smanger')
+    @commands.has_role('credo-smanager')
     # @is_smanager_setuped()
     async def smanager_open(self,ctx,*,custom_id:int):
         """
@@ -364,7 +364,7 @@ class Esports(commands.Cog):
         await ctx.send(f'{emote.tick}')
 
     @smanager.command(name='close')
-    @commands.has_role('credo-smanger')
+    @commands.has_role('credo-smanager')
     # @is_smanager_setuped()
     async def smanager_close(self,ctx,*,custom_id:int):
         """
@@ -395,7 +395,7 @@ class Esports(commands.Cog):
         await ctx.send(f'{emote.tick}')
 
     @smanager.command(name='delete')
-    @commands.has_role('credo-smanger')
+    @commands.has_role('credo-smanager')
     # @is_smanager_setuped()
     async def smanager_delete(self,ctx,*,custom_id:int):
         """Deletes The Setuped Custom"""
@@ -418,7 +418,7 @@ class Esports(commands.Cog):
 
 
     @smanager.command(name = 'toogle-custom')
-    @commands.has_role('credo-smanger')
+    @commands.has_role('credo-smanager')
     async def smanager_toggle_custom(self,ctx,custom_id:int):
         '''
         Toggle Scrims Manger Custom
@@ -442,7 +442,7 @@ class Esports(commands.Cog):
 
     @smanager.command(name='edit-custom')
     # @is_smanager_setuped()
-    @commands.has_role('credo-smanger')
+    @commands.has_role('credo-smanager')
     async def smanager_edit_custom(self,ctx,*,custom_id:int):
         """Edit The Custom Data"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
@@ -462,7 +462,7 @@ class Esports(commands.Cog):
     #======= days editor ===========#
     @smanager.command(name='edit-day')
     # @is_smanager_setuped()
-    @commands.has_role('credo-smanger')
+    @commands.has_role('credo-smanager')
     async def smanager_edit_day(self,ctx,*,custom_id:int):
         """Edit The Custom Open Days"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
@@ -477,7 +477,7 @@ class Esports(commands.Cog):
         await menu.start(ctx)
     #======= open-message editor ===========#
     @smanager.command(name='edit-open-message')
-    @commands.has_role('credo-smanger')
+    @commands.has_role('credo-smanager')
     async def smanager_edit_open_message(self,ctx,*,custom_id:int):
         """Edits The Custom Open Message"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
@@ -592,7 +592,7 @@ class Esports(commands.Cog):
 
     #======= close-message editor ===========#
     @smanager.command(name='edit-close-message')
-    @commands.has_role('credo-smanger')
+    @commands.has_role('credo-smanager')
     async def smanager_edit_close_message(self,ctx,*,custom_id:int):
         """Edits The Custom Close Message"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
@@ -703,7 +703,7 @@ class Esports(commands.Cog):
 
 
     @smanager.command(name='send-slotslist')
-    @commands.has_role('credo-smanger')
+    @commands.has_role('credo-smanager')
     async def smanager_send_slotslist(self,ctx,*,custom_id:int):
         """
         Send's The Slotlist To Setuped Channel
@@ -757,7 +757,7 @@ class Esports(commands.Cog):
             return
 
     @smanager.command(name='config')
-    @commands.has_role('credo-smanger')
+    @commands.has_role('credo-smanager')
     async def smanager_config(self,ctx):
         """See The Scrims Manager Configuration For This Server"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
@@ -830,7 +830,7 @@ class Esports(commands.Cog):
             await ctx.send_help(ctx.command)
     
     @tag_check.command(name = 'set')
-    @commands.has_role('credo-smanger')
+    @commands.has_role('credo-smanager')
     async def tag_check_set(self,ctx,check_channel:discord.TextChannel,*,mentions_required:int):
         '''
         Setups The Tag Check In You Server
@@ -850,7 +850,7 @@ class Esports(commands.Cog):
         await editable.edit(content = f'{emote.tick} | successfully setuped tag check in {check_channel.mention}')
 
     @tag_check.command(name = 'toggle')
-    @commands.has_role('credo-smanger')
+    @commands.has_role('credo-smanager')
     async def tag_check_toggle(self,ctx):
         '''
         Toggles This Tag Check
