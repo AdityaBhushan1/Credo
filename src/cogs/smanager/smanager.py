@@ -89,7 +89,7 @@ class Esports(commands.Cog):
         if scrims_manager['scrims_manager'] == False:
             raise expectations.ScrimsManagerNotSetup
 
-        if scrims_manager['custom_setuped'] > scrims_manager['max_customs']:
+        if scrims_manager['custom_setuped'] >= scrims_manager['max_customs']:
             return await ctx.send(f'{emote.error} | You Have Setuped Max Number Customs You Cannot Setup More Customs')
         await ctx.release()
 
