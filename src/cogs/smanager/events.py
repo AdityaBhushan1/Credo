@@ -36,9 +36,7 @@ class EsportsListners(commands.Cog):
             return
 
         elif scrims['is_running'] == False:
-            if scrims['auto_delete_on_reject'] == True:
-                self.bot.loop.create_task(delete_denied_message(message))
-            return await message.reply(f'{emote.error} | Registration Has Not Opend Yet',delete_after=10)
+            return
             
 
         
