@@ -243,7 +243,11 @@ class EsportsListners(commands.Cog):
     @commands.Cog.listener()
     async def on_deny_reg(self,message,type,addreact=True):
         if type == "insufficient_mentions":
-            await message.reply('You Did Not Mentioned Correct Number Of Peoples',delete_after=10)
+            embed=discord.Embed(title="Insufficient mention", description=f"You did not mention required mention.\nRequired mention : {} \nYou mention : {} ",color="khud se lga le yha v")
+            try:
+                await member.send(embed=embed)
+            except:
+                await message.reply(embed=embed,delete_after=10
             self.bot.dispatch("deny_reg_logs",f"Reagistration For {message.author}'s Team Has Been Dnied Due To Insufficient Mentions",message.guild.id)
             if addreact == True:
                 try:
@@ -251,7 +255,11 @@ class EsportsListners(commands.Cog):
                 except:
                     pass
         elif type == "mentioned_bot":
-            await message.reply('You Mentioned A Bot',delete_after=10)
+            embed=discord.Embed(title="Bot detected", description="Don't mention any bot in your format.\nIt's lead to ban your team.",color="khud se lga le")
+            try:
+                await member.send(embed=embed)
+            except:
+                await message.reply(embed=embed,delete_after=10)
             self.bot.dispatch("deny_reg_logs",f"Reagistration For {message.author}'s Team Has Been Dnied Because They Have Mentioned A Bot",message.guild.id)
             if addreact == True:
                 try:
@@ -259,7 +267,11 @@ class EsportsListners(commands.Cog):
                 except:
                     pass
         elif type == "baned_from_scrims":
-            await message.reply('You Are banned From Scrims',delete_after=10)
+            embed=discord.Embed(title="Ban Team", description="Your team will be banned from scrims.",color="khud se lga le")
+            try:
+                await member.send(embed=embed)
+            except:
+                await message.reply(embed=embed,delete_after=10)
             self.bot.dispatch("deny_reg_logs",f"Reagistration For {message.author}'s Team Has Been Dnied Because They Are Banned Form Scrims",message.guild.id)
             if addreact == True:
                 try:
@@ -275,7 +287,11 @@ class EsportsListners(commands.Cog):
         #         except:
         #             pass
         elif type == "allready_registerd":
-            await message.reply('You Are Already Registred',delete_after=10)
+            embed=discord.Embed(title="Already registered", description=f"Your team is already registered with this team name {}.",color="khud se lga le")
+            try:
+                await member.send(embed=embed)
+            except:
+                await message.reply(embed=embed,delete_after=10)
             self.bot.dispatch("deny_reg_logs",f"Reagistration For {message.author}'s Team Has Been Dnied Because They Are Already Registerd",message.guild.id)
             if addreact == True:
                 try:
