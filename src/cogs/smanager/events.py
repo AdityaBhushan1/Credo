@@ -43,17 +43,17 @@ class EsportsListners(commands.Cog):
         elif len([mem for mem in message.mentions]) == 0 or len([mem for mem in message.mentions]) < scrims['num_correct_mentions']:
             if scrims['auto_delete_on_reject'] == True:
                 self.bot.loop.create_task(delete_denied_message(message))
-                self.bot.dispatch("deny_reg",message,"insufficient_mentions")
+                self.bot.dispatch("deny_reg",message,"insufficient_mentions",scrims)
                 return
-            return self.bot.dispatch("deny_reg",message,"insufficient_mentions")
+            return self.bot.dispatch("deny_reg",message,"insufficient_mentions",scrims)
         else:
             for mem in message.mentions:
                 if mem.bot in message.mentions:
                     if scrims['auto_delete_on_reject'] == True:
                         self.bot.loop.create_task(delete_denied_message(message))
-                        self.bot.dispatch("deny_reg",message,"mentioned_bot")
+                        self.bot.dispatch("deny_reg",message,"mentioned_bot",scrims)
                         return
-                    return self.bot.dispatch("deny_reg",message,"mentioned_bot")
+                    return self.bot.dispatch("deny_reg",message,"mentioned_bot",scrims)
                 else:pass
 
             team_name = re.search(r"team.*", message.content.lower())
@@ -67,9 +67,9 @@ class EsportsListners(commands.Cog):
             if team_name in self.scrim_data[scrims['c_id']]["team_name"]:
                 if scrims['auto_delete_on_reject'] == True:
                     self.bot.loop.create_task(delete_denied_message(message))
-                    self.bot.dispatch("deny_reg",message,"allready_registerd")
+                    self.bot.dispatch("deny_reg",message,"allready_registerd",scrims)
                     return
-                return self.bot.dispatch("deny_reg",message,"allready_registerd")
+                return self.bot.dispatch("deny_reg",message,"allready_registerd",scrims)
             else:
 
                 self.scrim_data[scrims['c_id']]['counter'] = self.scrim_data[scrims['c_id']]['counter'] - 1
@@ -241,9 +241,13 @@ class EsportsListners(commands.Cog):
         await ch.send(content = role.mention if role else None ,embed=em,allowed_mentions=discord.AllowedMentions(roles=True))
 
     @commands.Cog.listener()
-    async def on_deny_reg(self,message,type,addreact=True):
+    async def on_deny_reg(self,message,type,addreact=True,scrims):
         if type == "insufficient_mentions":
-            await message.reply('You Did Not Mentioned Correct Number Of Peoples',delete_after=10)
+            embed=discord.Embed(title="Insufficient mention", description=f"You did not mention required mention.\nRequired mention : {} \nYou mention : {} ",color="khud se lga le yha v")
+            try:
+                await member.send(embed=embed)
+            except:
+                await message.reply(embed=embed,delete_after=10
             self.bot.dispatch("deny_reg_logs",f"Reagistration For {message.author}'s Team Has Been Dnied Due To Insufficient Mentions",message.guild.id)
             if addreact == True:
                 try:
@@ -251,7 +255,11 @@ class EsportsListners(commands.Cog):
                 except:
                     pass
         elif type == "mentioned_bot":
-            await message.reply('You Mentioned A Bot',delete_after=10)
+            embed=discord.Embed(title="Bot detected", description="Yoy Mentioned A Bot",color="khud se lga le")
+            try:
+                await member.send(embed=embed)
+            except:
+                await message.reply(embed=embed,delete_after=10)
             self.bot.dispatch("deny_reg_logs",f"Reagistration For {message.author}'s Team Has Been Dnied Because They Have Mentioned A Bot",message.guild.id)
             if addreact == True:
                 try:
@@ -259,7 +267,11 @@ class EsportsListners(commands.Cog):
                 except:
                     pass
         elif type == "baned_from_scrims":
-            await message.reply('You Are banned From Scrims',delete_after=10)
+            embed=discord.Embed(title="Ban Team", description="Your team will be banned from scrims.",color="khud se lga le")
+            try:
+                await member.send(embed=embed)
+            except:
+                await message.reply(embed=embed,delete_after=10)
             self.bot.dispatch("deny_reg_logs",f"Reagistration For {message.author}'s Team Has Been Dnied Because They Are Banned Form Scrims",message.guild.id)
             if addreact == True:
                 try:
@@ -275,7 +287,11 @@ class EsportsListners(commands.Cog):
         #         except:
         #             pass
         elif type == "allready_registerd":
-            await message.reply('You Are Already Registred',delete_after=10)
+            embed=discord.Embed(title="Already registered", description=f"Your team is already registered with this team name {}.",color="khud se lga le")
+            try:
+                await member.send(embed=embed)
+            except:
+                await message.reply(embed=embed,delete_after=10)
             self.bot.dispatch("deny_reg_logs",f"Reagistration For {message.author}'s Team Has Been Dnied Because They Are Already Registerd",message.guild.id)
             if addreact == True:
                 try:
