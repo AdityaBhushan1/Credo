@@ -95,7 +95,7 @@ class Other(commands.Cog, name='Other'):
 
         location = os.path.relpath(filename).replace("\\", "/")
 
-        final_url = f"<{source_url}/blob/main/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>"
+        final_url = f"<{source_url}/blob/master/src/{location}#L{firstlineno}-L{firstlineno + len(lines) - 1}>"
         await ctx.send(final_url)
 
     @commands.command()
