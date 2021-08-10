@@ -384,7 +384,7 @@ class Esports(commands.Cog):
 
         if data['is_registeration_done_today'] == True:
             return await ctx.send(f'{emote.error} | Registration For Today Is Already Completed')
-        else:pass
+        pass
 
         if data['is_running'] == False:
             return await ctx.send(f'{emote.error} | Registration Has Not Opened Yet')
@@ -429,15 +429,14 @@ class Esports(commands.Cog):
         data = await ctx.db.fetchrow('SELECT * FROM smanager.custom_data WHERE c_id = $1 AND guild_id = $2',custom_id,ctx.guild.id)
         if not data:
             return await ctx.send(f'{emote.error} | Thats Not Correct Custom ID, To Get Valid Custom ID Use `{ctx.prefix}smanager config`')
-        
+
         if data['toggle'] == False:
             await ctx.db.execute('UPDATE smanager.custom_data SET toggle = $1 WHERE c_id = $2',True,custom_id)
             await ctx.send(f'{emote.tick} | Successfully enabled custom with id `{custom_id}`')
             return
-        else:
-            await ctx.db.execute('UPDATE smanager.custom_data SET toggle = $1 WHERE c_id = $2',False,custom_id)
-            await ctx.send(f'{emote.tick} | Successfully disabled custom with id `{custom_id}`')
-            return
+        await ctx.db.execute('UPDATE smanager.custom_data SET toggle = $1 WHERE c_id = $2',False,custom_id)
+        await ctx.send(f'{emote.tick} | Successfully disabled custom with id `{custom_id}`')
+        return
 
 
     @smanager.command(name='edit-custom')
@@ -942,9 +941,8 @@ class Esports(commands.Cog):
         if data['toggle'] == False:
             await ctx.db.execute('UPDATE smanager.ez_tag SET toggle = $1 WHERE guild_id = $2',True,ctx.guild.id)
             return await ctx.success('Successfully Turned On Easy Tagging')
-        else:
-            await ctx.db.execute('UPDATE smanager.ez_tag SET toggle = $1 WHERE guild_id = $2',False,ctx.guild.id)
-            return await ctx.success('Successfully Turned Off Easy Tagging')
+        await ctx.db.execute('UPDATE smanager.ez_tag SET toggle = $1 WHERE guild_id = $2',False,ctx.guild.id)
+        return await ctx.success('Successfully Turned Off Easy Tagging')
 
 
 

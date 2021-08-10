@@ -158,10 +158,10 @@ class Utility(commands.Cog, name='Utility'):
             msg = await self.bot.wait_for('message', check=check, timeout=300.0)
         except asyncio.TimeoutError:
             return await ctx.send( f'{emote.error} | You took too long. Goodbye.')
-        
+
         if msg.content == f'{ctx.prefix}abort':
             return await ctx.send('Aborting.')
-        elif msg.content:
+        if msg.content:
             clean_content = await commands.clean_content().convert(ctx, msg.content)
         else:
             # fast path I guess?
@@ -861,11 +861,11 @@ class Utility(commands.Cog, name='Utility'):
             js = await resp.json()
             if resp.status == 200:
                 return js
-            elif resp.status == 404:
+            if resp.status == 404:
                 raise RuntimeError('Could not find that city')
             else:
                 fmt = 'Failed to fetch weather data for city %r: %s (status code: %d %s)'
-                
+    
 
     @commands.command()
     async def time(self, ctx: commands.Context, *, city: str):
@@ -971,7 +971,7 @@ class Utility(commands.Cog, name='Utility'):
 
         if len(questions_and_choices) < 3:
             return await ctx.send(f'{emote.xmark} | Need at least 1 question with 2 choices.')
-        elif len(questions_and_choices) > 21:
+        if len(questions_and_choices) > 21:
             return await ctx.send(f'{emote.xmark} | You can only have up to 20 choices.')
 
         perms = ctx.channel.permissions_for(ctx.me)

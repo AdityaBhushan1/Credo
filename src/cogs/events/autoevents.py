@@ -13,7 +13,7 @@ class AutoEvents(commands.Cog):
         if not record:
             return
 
-        elif not member.bot:
+        if not member.bot:
             if record['autorole_human_toggle'] == False:
                 return
             try:

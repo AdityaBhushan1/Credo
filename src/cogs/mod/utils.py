@@ -6,15 +6,13 @@ async def role_checker(ctx, role):
     if role.managed:
         await ctx.error(f"Role is an integrated role and cannot be added manually.")
         return False
-    elif ctx.me.top_role.position <= role.position:
+    if ctx.me.top_role.position <= role.position:
         await ctx.error(f"The position of {role.mention} is above my toprole ({ctx.me.top_role.mention})")
         return False
-    elif not ctx.author == ctx.guild.owner and ctx.author.top_role.position <= role.position:
+    if not ctx.author == ctx.guild.owner and ctx.author.top_role.position <= role.position:
         await ctx.error(f"The position of {role.mention} is above your top role ({ctx.author.top_role.mention})")
         return False
-
-    else:
-        return True
+    return True
 
 class Arguments(argparse.ArgumentParser):
     def error(self, message):

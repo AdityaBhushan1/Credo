@@ -623,8 +623,7 @@ class Mod(commands.Cog, name='Moderation'):
 
             if len(failed) > 0:
                 return await ctx.error(f"I couldn't add roles to:\n{', '.join(failed)}")
-            else:
-                await ctx.success(f'Successfully Added Roles To {len(members)}')
+            await ctx.success(f'Successfully Added Roles To {len(members)}')
 
     @role.command(name="humans")
     @commands.has_guild_permissions(manage_roles=True)
@@ -648,9 +647,7 @@ class Mod(commands.Cog, name='Moderation'):
 
                 if failed > 0:
                     return await confirmation.update(description = f"I couldn't add roles to {failed} members.")
-
-                else:
-                    await confirmation.update(description = f"{emote.tick} | Successfully added role to {len(members)} members.")
+                await confirmation.update(description = f"{emote.tick} | Successfully added role to {len(members)} members.")
             else:
                 await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
 
@@ -676,9 +673,7 @@ class Mod(commands.Cog, name='Moderation'):
 
                 if failed > 0:
                     return await confirmation.update(description = f"I couldn't add roles to {failed} bots.")
-
-                else:
-                    await confirmation.update(description = f"{emote.tick} | Successfully added role to {len(members)} bots.")
+                await confirmation.update(description = f"{emote.tick} | Successfully added role to {len(members)} bots.")
             else:
                 await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
 
@@ -704,9 +699,7 @@ class Mod(commands.Cog, name='Moderation'):
 
                 if failed > 0:
                     return await confirmation.update(description = f"I couldn't add roles to {failed} members.")
-
-                else:
-                    await confirmation.update(description = f"{emote.tick} | Successfully added role to {len(members)} members.")
+                await confirmation.update(description = f"{emote.tick} | Successfully added role to {len(members)} members.")
             else:
                 await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
 
@@ -729,8 +722,7 @@ class Mod(commands.Cog, name='Moderation'):
 
             if len(failed) > 0:
                 return await ctx.error(f"I couldn't remove roles from:\n{', '.join(failed)}")
-            else:
-                await ctx.success(f'Successfully Removed Roles To {len(members)}')
+            await ctx.success(f'Successfully Removed Roles To {len(members)}')
 
     @rrole.command(name="humans")
     @commands.has_guild_permissions(manage_roles=True)
@@ -754,9 +746,7 @@ class Mod(commands.Cog, name='Moderation'):
 
                 if failed > 0:
                     return await confirmation.update(description = f"I couldn't remove roles to {failed} members.")
-
-                else:
-                    await confirmation.update(description = f"{emote.tick} | Successfully removed role to {len(members)} members.")
+                await confirmation.update(description = f"{emote.tick} | Successfully removed role to {len(members)} members.")
             else:
                 await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
 
@@ -782,9 +772,7 @@ class Mod(commands.Cog, name='Moderation'):
 
                 if failed > 0:
                     return await confirmation.update(description = f"I couldn't remove roles to {failed} members.")
-
-                else:
-                    await confirmation.update(description = f"{emote.tick} | Successfully removed role to {len(members)} members.")
+                await confirmation.update(description = f"{emote.tick} | Successfully removed role to {len(members)} members.")
             else:
                 await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
     @rrole.command(name="all")
@@ -809,9 +797,7 @@ class Mod(commands.Cog, name='Moderation'):
 
                 if failed > 0:
                     return await confirmation.update(description = f"I couldn't remove roles to {failed} members.")
-
-                else:
-                    await confirmation.update(description = f"{emote.tick} | Successfully removed role to {len(members)} members.")
+                await confirmation.update(description = f"{emote.tick} | Successfully removed role to {len(members)} members.")
             else:
                 await confirmation.update(description = "Not confirmed", hide_author=True, color=0xff5555)
 
@@ -1025,7 +1011,7 @@ class Mod(commands.Cog, name='Moderation'):
         if not (channels):
             return await ctx.error(f"**{role}** doesn't have `read_messages` enabled in any channel.")
 
-        elif not mine:
+        if not mine:
             return await ctx.error(
                 f"`{sum(1 for i in channels)} channels` have read messages enabled. But unfortunately I don't permission to edit any of them."
             )

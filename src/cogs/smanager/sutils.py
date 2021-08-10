@@ -74,8 +74,7 @@ class CustomEditMenu(menus.Menu):
             data = scrim[f'{str}']
             if data == True:
                 return f'{emote.switch_on}'
-            else:
-                return f'{emote.switch_off}'
+            return f'{emote.switch_off}'
 
         fields = {
             "Custom Name": f"`{scrim['custom_title']}`",
@@ -462,22 +461,21 @@ class CustomEditMenu(menus.Menu):
                 await self.ctx.db.execute('UPDATE smanager.custom_data SET close_time = NULL WHERE c_id = $1',self.scrim['c_id'])
                 await self.refresh()
                 return
-            else:
-                match = re.match(r"\d+:\d+", close_time.content)
-                if not match:
-                    await self.ctx.error(f'Thats Not A Valid Time')
-                    self.stop()
-                    return
-                match = match.group(0) 
-                hour, minute = match.split(":")
-                str_time = f'{hour}:{minute}'
-                converting = datetime.strptime(str_time,'%H:%M')
-                final_time = converting.time()
-                await safe_delete(msg)
-                await safe_delete(close_time)
-                await self.refresh_db()
-                await self.ctx.db.execute('UPDATE smanager.custom_data SET close_time = $1 WHERE c_id = $2',final_time,self.scrim['c_id'])
-                await self.refresh()
+            match = re.match(r"\d+:\d+", close_time.content)
+            if not match:
+                await self.ctx.error(f'Thats Not A Valid Time')
+                self.stop()
+                return
+            match = match.group(0) 
+            hour, minute = match.split(":")
+            str_time = f'{hour}:{minute}'
+            converting = datetime.strptime(str_time,'%H:%M')
+            final_time = converting.time()
+            await safe_delete(msg)
+            await safe_delete(close_time)
+            await self.refresh_db()
+            await self.ctx.db.execute('UPDATE smanager.custom_data SET close_time = $1 WHERE c_id = $2',final_time,self.scrim['c_id'])
+            await self.refresh()
 
     # @menus.button(emote.regional_indicator("L"))
     # async def change_autoclean_time(self, payload):
@@ -654,8 +652,7 @@ class DaysEditorMenu(menus.Menu):
             data = scrim[f'open_on_{str}']
             if data == True:
                 return f'{emote.switch_on}'
-            else:
-                return f'{emote.switch_off}'
+            return f'{emote.switch_off}'
 
         fields = {
             ":one: Monday": f"{reactions('monday')}",

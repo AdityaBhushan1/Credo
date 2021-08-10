@@ -14,8 +14,7 @@ class RemoverRvents(commands.Cog):
         if record['automeme_channel_id'] == int(channel.id):
             await self.bot.db.execute('UPDATE public.server_configs SET automeme_channel_id = NULL automeme_toogle = $1 WHERE guild_id = $2',False,channel.guild.id)
             return
-        else:
-            pass
+        pass
         
         brocast = await self.bot.db.fetchrow('SELECT * FROM public.brodcast WHERE guild_id = $1',channel.guild.id)
         if not brocast:return
@@ -23,8 +22,7 @@ class RemoverRvents(commands.Cog):
             await self.bot.db.execute('DELETE FROM public.brodcst WHERE guild_id = $1',channel.guild.id)
             await self.bot.db.execute('UPDATE public.server_configs SET is_bot_setuped = $1 WHERE guild_id = $2',False,channel.guild.id)
             return
-        else:
-            pass
+        pass
 
 
     @commands.Cog.listener()
