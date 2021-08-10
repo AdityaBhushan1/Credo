@@ -460,7 +460,7 @@ class Mod(commands.Cog, name='Moderation'):
 
         total_reactions = 0
         async for message in ctx.history(limit=search, before=ctx.message):
-            if len(message.reactions):
+            if message.reactions:
                 total_reactions += sum(r.count for r in message.reactions)
                 await message.clear_reactions()
 
@@ -829,7 +829,7 @@ class Mod(commands.Cog, name='Moderation'):
     @commands.bot_has_permissions(manage_channels=True)
     async def category_delete(self, ctx, *, category: Category):
         """Delete a category and all the channels under it."""
-        if not len(category.channels):
+        if not category.channels:
             return await ctx.error(f"**{category}** doesn't have any channels.")
         confirmation = ConfirmationPrompt(ctx, self.bot.color)
         await confirmation.confirm(title = self.confirmater_title, description = f"All channels under the category `{category}` will be deleted.")    
@@ -859,7 +859,7 @@ class Mod(commands.Cog, name='Moderation'):
     @commands.bot_has_permissions(manage_channels=True)
     async def category_hide(self, ctx, *, category: Category):
         """Hide a category and all its channels"""
-        if not len(category.channels):
+        if not category.channels:
             return await ctx.error(f"**{category}** doesn't have any channels.")
         confirmation = ConfirmationPrompt(ctx, self.bot.color)
         await confirmation.confirm(title = self.confirmater_title, description = f"All channels under the category `{category}` will be hidden.")    
@@ -887,7 +887,7 @@ class Mod(commands.Cog, name='Moderation'):
     @commands.bot_has_permissions(manage_channels=True)
     async def category_unhide(self, ctx, *, category: Category):
         """Unhide a hidden category and all its channels."""
-        if not len(category.channels):
+        if not category.channels:
             return await ctx.error(f"**{category}** doesn't have any channels.")
         confirmation = ConfirmationPrompt(ctx, self.bot.color)
         await confirmation.confirm(title = self.confirmater_title, description = f"All channels under the category `{category}` will be unhidden.")    
@@ -918,7 +918,7 @@ class Mod(commands.Cog, name='Moderation'):
         Delete a category completely and create a new one
         This will delete all the channels under the category and will make a new one with same perms and channels.
         """
-        if not len(category.channels):
+        if not category.channels:
             return await ctx.error(f"**{category}** doesn't have any channels.")
         confirmation = ConfirmationPrompt(ctx, self.bot.color)
         await confirmation.confirm(title = self.confirmater_title, description = f"All channels under the category `{category}` will be cloned and deleted.")    
@@ -950,7 +950,7 @@ class Mod(commands.Cog, name='Moderation'):
         '''
         Locks All The Channel Under The Category 
         '''
-        if not len(category.channels):
+        if not category.channels:
             return await ctx.error(f"**{category}** doesn't have any channels.")
         confirmation = ConfirmationPrompt(ctx, self.bot.color)
         await confirmation.confirm(title = self.confirmater_title, description = f"All channels under the category `{category}` will be locked.")    
@@ -978,7 +978,7 @@ class Mod(commands.Cog, name='Moderation'):
     @commands.bot_has_permissions(manage_channels=True)
     async def category_unlock(self, ctx, *, category: Category):
         '''Unlocks All The Channels Under Category'''
-        if not len(category.channels):
+        if not category.channels:
             return await ctx.error(f"**{category}** doesn't have any channels.")
         confirmation = ConfirmationPrompt(ctx, self.bot.color)
         await confirmation.confirm(title = self.confirmater_title, description = f"All channels under the category `{category}` will be unlocked.")    
@@ -1022,7 +1022,7 @@ class Mod(commands.Cog, name='Moderation'):
         mine = sum(1 for i in filter(lambda x: x.permissions_for(ctx.me).manage_channels, (channels)))
 
 
-        if not (len(channels)):
+        if not (channels):
             return await ctx.error(f"**{role}** doesn't have `read_messages` enabled in any channel.")
 
         elif not mine:
