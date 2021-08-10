@@ -36,10 +36,10 @@ class Esports(commands.Cog):
         Setups The Credo Scrims Manager In Your Server
         '''
         data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if data == False:
+        if data is False:
             raise expectations.NotSetup
         scrims_manager = await self.bot.db.fetchval('SELECT scrims_manager FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager == False:
+        if scrims_manager is False:
             start_msg = await ctx.send(f'{emote.loading} | Setting Up Scrims Manager')
             guild=ctx.guild
             permissions = discord.Permissions(send_messages=True, read_messages=True,administrator=True)
@@ -86,7 +86,7 @@ class Esports(commands.Cog):
         Setups The Custom In Your Server
         """
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager['scrims_manager'] == False:
+        if scrims_manager['scrims_manager'] is False:
             raise expectations.ScrimsManagerNotSetup
 
         if scrims_manager['custom_setuped'] >= scrims_manager['max_customs']:
@@ -341,22 +341,22 @@ class Esports(commands.Cog):
         Manually Opens The Registration
         """
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager['scrims_manager'] == False:
+        if scrims_manager['scrims_manager'] is False:
             raise expectations.ScrimsManagerNotSetup
 
         data = await self.bot.db.fetchrow('SELECT * FROM smanager.custom_data WHERE c_id = $1 AND guild_id = $2',custom_id,ctx.guild.id)
         if not data:
             return await ctx.send(f'{emote.error} | Thats Not Correct Custom ID, To Get Valid Custom ID Use `{ctx.prefix}smanager config`')
             
-        if data['toggle'] == False:
+        if data['toggle'] is False:
             return await ctx.error(f'The Scrims Is Toggled Of So You Can Not Execute This Command')
 
         channel = data['reg_ch']
 
-        if data['is_registeration_done_today'] == True:
+        if data['is_registeration_done_today'] is True:
             return await ctx.send(f'{emote.error} | Registration For Today Is Already Completed')
 
-        if data['is_running'] == True:
+        if data['is_running'] is True:
             return await ctx.send(f'{emote.error} | Registration Is Already Going On')
         
         self.bot.dispatch("reg_open",channel)
@@ -371,7 +371,7 @@ class Esports(commands.Cog):
         Manually Closes The Rewgistration
         """
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager['scrims_manager'] == False:
+        if scrims_manager['scrims_manager'] is False:
             raise expectations.ScrimsManagerNotSetup
 
         data = await self.bot.db.fetchrow('SELECT * FROM smanager.custom_data WHERE c_id = $1 AND guild_id = $2',custom_id,ctx.guild.id)
@@ -379,14 +379,14 @@ class Esports(commands.Cog):
         if not data:
             return await ctx.send(f'{emote.error} | Thats Not Correct Custom ID, To Get Valid Custom ID Use `{ctx.prefix}smanager config`')
             
-        if data['toggle'] == False:
+        if data['toggle'] is False:
             return await ctx.error(f'The Scrims Is Toggled Of So You Can Not Execute This Command')
 
-        if data['is_registeration_done_today'] == True:
+        if data['is_registeration_done_today'] is True:
             return await ctx.send(f'{emote.error} | Registration For Today Is Already Completed')
         else:pass
 
-        if data['is_running'] == False:
+        if data['is_running'] is False:
             return await ctx.send(f'{emote.error} | Registration Has Not Opened Yet')
 
         self.bot.dispatch("auto_close_reg",data['reg_ch'])
@@ -400,7 +400,7 @@ class Esports(commands.Cog):
     async def smanager_delete(self,ctx,*,custom_id:int):
         """Deletes The Setuped Custom"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager['scrims_manager'] == False:
+        if scrims_manager['scrims_manager'] is False:
             raise expectations.ScrimsManagerNotSetup
         channel = await self.bot.db.fetchrow('SELECT * FROM smanager.custom_data WHERE c_id = $1 AND guild_id = $2',custom_id,ctx.guild.id)
         if not channel:
@@ -424,13 +424,13 @@ class Esports(commands.Cog):
         Toggle Scrims Manger Custom
         '''
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager['scrims_manager'] == False:
+        if scrims_manager['scrims_manager'] is False:
             raise expectations.ScrimsManagerNotSetup
         data = await ctx.db.fetchrow('SELECT * FROM smanager.custom_data WHERE c_id = $1 AND guild_id = $2',custom_id,ctx.guild.id)
         if not data:
             return await ctx.send(f'{emote.error} | Thats Not Correct Custom ID, To Get Valid Custom ID Use `{ctx.prefix}smanager config`')
         
-        if data['toggle'] == False:
+        if data['toggle'] is False:
             await ctx.db.execute('UPDATE smanager.custom_data SET toggle = $1 WHERE c_id = $2',True,custom_id)
             await ctx.send(f'{emote.tick} | Successfully enabled custom with id `{custom_id}`')
             return
@@ -446,14 +446,14 @@ class Esports(commands.Cog):
     async def smanager_edit_custom(self,ctx,*,custom_id:int):
         """Edit The Custom Data"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager['scrims_manager'] == False:
+        if scrims_manager['scrims_manager'] is False:
             raise expectations.ScrimsManagerNotSetup
         
         custom_data = await ctx.db.fetchrow('SELECT * FROM smanager.custom_data WHERE c_id = $1 AND guild_id = $2',custom_id,ctx.guild.id)
         if not custom_data:
             return await ctx.send(f'{emote.error} | Thats Not Correct Custom ID, To Get Valid Custom ID Use `{ctx.prefix}smanager config`')
 
-        if custom_data['is_running'] == True:
+        if custom_data['is_running'] is True:
             return await ctx.send(f'{emote.error} | Registration Is Going On')
 
         menu = CustomEditMenu(scrim=custom_data)
@@ -466,7 +466,7 @@ class Esports(commands.Cog):
     async def smanager_edit_day(self,ctx,*,custom_id:int):
         """Edit The Custom Open Days"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager['scrims_manager'] == False:
+        if scrims_manager['scrims_manager'] is False:
             raise expectations.ScrimsManagerNotSetup
         
         custom_data = await ctx.db.fetchrow('SELECT * FROM smanager.custom_data WHERE c_id = $1 AND guild_id = $2',custom_id,ctx.guild.id)
@@ -481,7 +481,7 @@ class Esports(commands.Cog):
     async def smanager_edit_open_message(self,ctx,*,custom_id:int):
         """Edits The Custom Open Message"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager['scrims_manager'] == False:
+        if scrims_manager['scrims_manager'] is False:
             raise expectations.ScrimsManagerNotSetup
         
         custom_data = await ctx.db.fetchrow('SELECT * FROM smanager.custom_data WHERE c_id = $1 AND guild_id = $2',custom_id,ctx.guild.id)
@@ -596,7 +596,7 @@ class Esports(commands.Cog):
     async def smanager_edit_close_message(self,ctx,*,custom_id:int):
         """Edits The Custom Close Message"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager['scrims_manager'] == False:
+        if scrims_manager['scrims_manager'] is False:
             raise expectations.ScrimsManagerNotSetup
         custom_data = await ctx.db.fetchrow('SELECT * FROM smanager.custom_data WHERE c_id = $1 AND guild_id = $2',custom_id,ctx.guild.id)
         if not custom_data:
@@ -709,17 +709,17 @@ class Esports(commands.Cog):
         Send's The Slotlist To Setuped Channel
         """
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager['scrims_manager'] == False:
+        if scrims_manager['scrims_manager'] is False:
             raise expectations.ScrimsManagerNotSetup
 
         custom_data = await self.bot.db.fetchrow('SELECT * FROM smanager.custom_data WHERE c_id = $1',custom_id)
         if not custom_data:
             return await ctx.send(f'{emote.error} | Thats Not Correct Custom ID, To Get Valid Custom ID Use `{ctx.prefix}smanager config`')
         
-        if custom_data['is_running'] == True:
+        if custom_data['is_running'] is True:
             return await ctx.send(f'{emote.error} | Registration Is Going On')
 
-        if custom_data['is_registeration_done_today'] == False:
+        if custom_data['is_registeration_done_today'] is False:
             return await ctx.send(f'{emote.error} | Registration For Today Is Not Done')
 
         editable_message = await ctx.send(F'{emote.loading} | Generating Slotlist')
@@ -761,7 +761,7 @@ class Esports(commands.Cog):
     async def smanager_config(self,ctx):
         """See The Scrims Manager Configuration For This Server"""
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager['scrims_manager'] == False:
+        if scrims_manager['scrims_manager'] is False:
             raise expectations.ScrimsManagerNotSetup
 
         allscrims = await ctx.db.fetch('SELECT * FROM smanager.custom_data WHERE guild_id = $1',ctx.guild.id)
@@ -783,7 +783,7 @@ class Esports(commands.Cog):
             _role = getattr(role, "mention", "`Role Deleted!`")
             open_time = (scrim['open_time']).strftime("%I:%M %p")
             close_time = 'None'
-            if scrim['close_time'] != None:
+            if scrim['close_time'] is not None:
                 close_time = (scrim['close_time']).strftime("%I:%M %p")
             ping_role = discord.utils.get(ctx.guild.roles, id = scrim['ping_role'])
             _ping_role = getattr(ping_role, "mention", "`None`")
@@ -836,7 +836,7 @@ class Esports(commands.Cog):
         Setups The Tag Check In You Server
         '''
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager['scrims_manager'] == False:
+        if scrims_manager['scrims_manager'] is False:
             raise expectations.ScrimsManagerNotSetup
 
         data = await self.bot.db.fetchrow('SELECT * FROM smanager.tag_check WHERE guild_id = $1',ctx.guild.id)
@@ -856,13 +856,13 @@ class Esports(commands.Cog):
         Toggles This Tag Check
         '''
         scrims_manager = await self.bot.db.fetchrow('SELECT * FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if scrims_manager['scrims_manager'] == False:
+        if scrims_manager['scrims_manager'] is False:
             raise expectations.ScrimsManagerNotSetup
 
         data = await self.bot.db.fetchrow('SELECT * FROM smanager.tag_check WHERE guild_id = $1',ctx.guild.id)
         if not data:
             return await ctx.send(f'{emote.error} | This Server Does Not Tag Check Setuped')
-        if data['toggle'] == False:
+        if data['toggle'] is False:
             await ctx.db.execute('UPDATE smanager.tag_check SET toggle = $1 WHERE guild_id = $2',True,ctx.guild.id)
             await ctx.send(f'{emote.tick} | Successfully enabled tag check')
             return
@@ -939,7 +939,7 @@ class Esports(commands.Cog):
         data = await self.bot.db.fetchrow('SELECT * FROM smanager.ez_tag WHERE guild_id = $1',ctx.guild.id)
         if not data:
             return await ctx.error('You Do Not Easy Tag Setuped') 
-        if data['toggle'] == False:
+        if data['toggle'] is False:
             await ctx.db.execute('UPDATE smanager.ez_tag SET toggle = $1 WHERE guild_id = $2',True,ctx.guild.id)
             return await ctx.success('Successfully Turned On Easy Tagging')
         else:

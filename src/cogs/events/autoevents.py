@@ -14,7 +14,7 @@ class AutoEvents(commands.Cog):
             return
 
         elif not member.bot:
-            if record['autorole_human_toggle'] == False:
+            if record['autorole_human_toggle'] is False:
                 return
             try:
                 await member.add_roles(discord.Object(id=record['autorole_human']), reason="Credo's autorole")
@@ -22,7 +22,7 @@ class AutoEvents(commands.Cog):
                 return
 
         elif member.bot:
-            if record['autorole_bot_toggle'] == False:
+            if record['autorole_bot_toggle'] is False:
                 return
             try:
                 await member.add_roles(discord.Object(id=record['autorole_bot']), reason="Credo's autorole")

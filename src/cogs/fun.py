@@ -24,7 +24,7 @@ class Fun(commands.Cog, name='Fun'):
         except:
             await ctx.send('An Error Occured.')
             return
-        if meme.nsfw == True:
+        if meme.nsfw is True:
             await ctx.send('An Error Occured.')
             return
         else:
@@ -313,7 +313,7 @@ class Fun(commands.Cog, name='Fun'):
 
     @commands.command()
     async def wink(self,ctx,user: discord.Member = None):
-        if user == None:
+        if user is None:
             user = ctx.author
 
         async with ctx.channel.typing():
@@ -340,7 +340,7 @@ class Fun(commands.Cog, name='Fun'):
 
     @commands.command()
     async def hug(self,ctx,user: discord.Member = None):
-        if user == None:
+        if user is None:
             user = ctx.author
 
         async with ctx.channel.typing():

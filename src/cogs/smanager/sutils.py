@@ -43,11 +43,11 @@ class CustomEditMenu(menus.Menu):
 
         guild = self.bot.get_guild(scrim['guild_id'])
         role = discord.utils.get(guild.roles, id = scrim['correct_reg_role'])
-        if scrim['ping_role'] == None:
+        if scrim['ping_role'] is None:
             ping_role = None
         else:
             ping_role = discord.utils.get(guild.roles, id = scrim['ping_role'])
-        if scrim['open_role'] == None:
+        if scrim['open_role'] is None:
             open_role = None
         else:
             open_role = discord.utils.get(guild.roles, id = scrim['open_role'])
@@ -62,7 +62,7 @@ class CustomEditMenu(menus.Menu):
             )#
 
         open_time = (scrim['open_time']).strftime("%I:%M %p")
-        if scrim['close_time'] == None:
+        if scrim['close_time'] is None:
             close_time = 'None'
         else:
             close_time = scrim['close_time'].strftime("%I:%M %p")
@@ -72,7 +72,7 @@ class CustomEditMenu(menus.Menu):
         embed.title = f"Edit Scrims Configuration: {scrim['c_id']}"
         def reactions(str):
             data = scrim[f'{str}']
-            if data == True:
+            if data is True:
                 return f'{emote.switch_on}'
             else:
                 return f'{emote.switch_off}'
@@ -426,7 +426,7 @@ class CustomEditMenu(menus.Menu):
 
     @menus.button(emote.regional_indicator("I"))
     async def change_auto_clean(self, payload):
-        if self.scrim['auto_clean'] == True:
+        if self.scrim['auto_clean'] is True:
             await self.ctx.db.execute('UPDATE smanager.custom_data SET auto_clean = $1 WHERE c_id = $2',False,self.scrim['c_id'])
             await self.refresh()
         else:
@@ -435,7 +435,7 @@ class CustomEditMenu(menus.Menu):
 
     @menus.button(emote.regional_indicator("J"))
     async def change_auto_slotlist_sender(self, payload):
-        if self.scrim['auto_slot_list_send'] == True:
+        if self.scrim['auto_slot_list_send'] is True:
             await self.ctx.db.execute('UPDATE smanager.custom_data SET auto_slot_list_send = $1 WHERE c_id = $2',False,self.scrim['c_id'])
             await self.refresh()
         else:
@@ -508,7 +508,7 @@ class CustomEditMenu(menus.Menu):
 
     @menus.button(emote.regional_indicator("L"))
     async def change_auto_delete_rejected_messages(self, payload):
-        if self.scrim['auto_delete_on_reject'] == True:
+        if self.scrim['auto_delete_on_reject'] is True:
             await self.ctx.db.execute('UPDATE smanager.custom_data SET auto_delete_on_reject = $1 WHERE c_id = $2',False,self.scrim['c_id'])
             await self.refresh()
         else:
@@ -652,7 +652,7 @@ class DaysEditorMenu(menus.Menu):
 
         def reactions(str):
             data = scrim[f'open_on_{str}']
-            if data == True:
+            if data is True:
                 return f'{emote.switch_on}'
             else:
                 return f'{emote.switch_off}'
@@ -694,7 +694,7 @@ class DaysEditorMenu(menus.Menu):
     
     @menus.button('\U00000031\U0000fe0f\U000020e3')
     async def change_scrim_monday(self,payload):
-        if self.scrim['open_on_monday'] == True:
+        if self.scrim['open_on_monday'] is True:
             await self.ctx.db.execute('UPDATE smanager.custom_data SET open_on_monday = $1 WHERE c_id = $2',False,self.scrim['c_id'])
             await self.refresh()
         else:
@@ -703,7 +703,7 @@ class DaysEditorMenu(menus.Menu):
 
     @menus.button('\U00000032\U0000fe0f\U000020e3')
     async def change_scrim_tuesday(self,payload):
-        if self.scrim['open_on_tuesday'] == True:
+        if self.scrim['open_on_tuesday'] is True:
             await self.ctx.db.execute('UPDATE smanager.custom_data SET open_on_tuesday = $1 WHERE c_id = $2',False,self.scrim['c_id'])
             await self.refresh()
         else:
@@ -712,7 +712,7 @@ class DaysEditorMenu(menus.Menu):
 
     @menus.button('\U00000033\U0000fe0f\U000020e3')
     async def change_scrim_wednesday(self,payload):
-        if self.scrim['open_on_wednesday'] == True:
+        if self.scrim['open_on_wednesday'] is True:
             await self.ctx.db.execute('UPDATE smanager.custom_data SET open_on_wednesday = $1 WHERE c_id = $2',False,self.scrim['c_id'])
             await self.refresh()
         else:
@@ -721,7 +721,7 @@ class DaysEditorMenu(menus.Menu):
 
     @menus.button('\U00000034\U0000fe0f\U000020e3')
     async def change_scrim_thursday(self,payload):
-        if self.scrim['open_on_thursday'] == True:
+        if self.scrim['open_on_thursday'] is True:
             await self.ctx.db.execute('UPDATE smanager.custom_data SET open_on_thursday = $1 WHERE c_id = $2',False,self.scrim['c_id'])
             await self.refresh()
         else:
@@ -730,7 +730,7 @@ class DaysEditorMenu(menus.Menu):
 
     @menus.button('\U00000035\U0000fe0f\U000020e3')
     async def change_scrim_friday(self,payload):
-        if self.scrim['open_on_friday'] == True:
+        if self.scrim['open_on_friday'] is True:
             await self.ctx.db.execute('UPDATE smanager.custom_data SET open_on_friday = $1 WHERE c_id = $2',False,self.scrim['c_id'])
             await self.refresh()
         else:
@@ -739,7 +739,7 @@ class DaysEditorMenu(menus.Menu):
 
     @menus.button('\U00000036\U0000fe0f\U000020e3')
     async def change_scrim_saturday(self,payload):
-        if self.scrim['open_on_saturday'] == True:
+        if self.scrim['open_on_saturday'] is True:
             await self.ctx.db.execute('UPDATE smanager.custom_data SET open_on_saturday = $1 WHERE c_id = $2',False,self.scrim['c_id'])
             await self.refresh()
         else:
@@ -748,7 +748,7 @@ class DaysEditorMenu(menus.Menu):
 
     @menus.button('\U00000037\U0000fe0f\U000020e3')
     async def change_scrim_sunday(self,payload):
-        if self.scrim['open_on_sunday'] == True:
+        if self.scrim['open_on_sunday'] is True:
             await self.ctx.db.execute('UPDATE smanager.custom_data SET open_on_sunday = $1 WHERE c_id = $2',False,self.scrim['c_id'])
             await self.refresh()
         else:

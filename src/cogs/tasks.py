@@ -20,7 +20,7 @@ class Tasks(commands.Cog):
                 meme = await self.client.images.random_meme()
             except:
                 return
-            if meme.nsfw == True:
+            if meme.nsfw is True:
                 return
             em = discord.Embed(title = f'{meme.title}',color=self.bot.color)
             em.set_image(url=meme.image_url)

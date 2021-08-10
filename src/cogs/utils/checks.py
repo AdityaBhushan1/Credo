@@ -7,7 +7,7 @@ def is_bot_setuped():
             return False
 
         data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if data == False:
+        if data is False:
             await ctx.send(f'{emote.error} | This Server Dose Not Have Bot Setuped Here Use `*setup`')
             False
             return
@@ -20,7 +20,7 @@ def is_smanager_setuped():
             return False
 
         data = await ctx.db.fetchval('SELECT scrims_manager FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if data == False:
+        if data is False:
             await ctx.send(f'{emote.error} | This Server Dose Not Have Smanager Setuped Here Use `*smanager setup`')
             False
             return
