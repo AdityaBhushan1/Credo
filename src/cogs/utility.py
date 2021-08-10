@@ -863,8 +863,7 @@ class Utility(commands.Cog, name='Utility'):
                 return js
             if resp.status == 404:
                 raise RuntimeError('Could not find that city')
-            else:
-                fmt = 'Failed to fetch weather data for city %r: %s (status code: %d %s)'
+            fmt = 'Failed to fetch weather data for city %r: %s (status code: %d %s)'
     
 
     @commands.command()

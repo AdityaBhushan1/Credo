@@ -463,7 +463,7 @@ class CustomEditMenu(menus.Menu):
                 return
             match = re.match(r"\d+:\d+", close_time.content)
             if not match:
-                await self.ctx.error(f'Thats Not A Valid Time')
+                await self.ctx.error('Thats Not A Valid Time')
                 self.stop()
                 return
             match = match.group(0) 

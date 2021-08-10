@@ -384,7 +384,6 @@ class Esports(commands.Cog):
 
         if data['is_registeration_done_today'] == True:
             return await ctx.send(f'{emote.error} | Registration For Today Is Already Completed')
-        pass
 
         if data['is_running'] == False:
             return await ctx.send(f'{emote.error} | Registration Has Not Opened Yet')
