@@ -50,11 +50,11 @@ class Dialog(ABC):
             color = self.color
 
         self._embed.colour = color
-        if title != None:
+        if title is not None:
             self._embed.title = title
         else:
             self._embed.title = None
-        if description != None:
+        if description is not None:
             self._embed.description = description
         else:
             self._embed.description = None
@@ -101,11 +101,11 @@ class Confirmation(Dialog):
     ) -> bool or None:
 
         emb = discord.Embed(color=self.color)
-        if title != None:
+        if title is not None:
             emb.title = title
         else:
             emb.title = None
-        if description != None:
+        if description is not None:
             emb.description = description
         else:
             emb.description = None

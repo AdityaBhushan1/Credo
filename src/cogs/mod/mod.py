@@ -1078,7 +1078,7 @@ class Mod(commands.Cog, name='Moderation'):
 
         success = 0
         for channel in ctx.guild.channels:
-            if channel != None and channel.permissions_for(channel.guild.me).manage_channels:
+            if channel is not None and channel.permissions_for(channel.guild.me).manage_channels:
 
                 perms = channel.overwrites_for(role)
                 perms.read_messages = True

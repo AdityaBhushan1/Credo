@@ -133,7 +133,7 @@ class BotSettings(commands.Cog):
         Turn On Automeme
         '''
         data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if data == False:
+        if data is False:
             raise expectations.NotSetup
         await ctx.db.execute('UPDATE public.server_configs SET automeme_channel_id = $2,automeme_toogle = $3 WHERE guild_id = $1', ctx.guild.id, channel.id,True)
         await ctx.send(f'{emote.tick} | Successfully Setuped Automeme Channel To {channel.mention}')
@@ -145,7 +145,7 @@ class BotSettings(commands.Cog):
         Sets The Autorole For Human 
         '''
         data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if data == False:
+        if data is False:
             raise expectations.NotSetup
         botrole = discord.utils.get(ctx.guild.roles,name="Credo")
         if role.position > botrole.position:
@@ -164,7 +164,7 @@ class BotSettings(commands.Cog):
         Sets The Autorole For Bots 
         '''
         data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if data == False:
+        if data is False:
             raise expectations.NotSetup
         botrole = discord.utils.get(ctx.guild.roles,name="Credo")
         if role.position > botrole.position:
@@ -188,12 +188,12 @@ class BotSettings(commands.Cog):
             `automeme` - turn on/off automeme
         """
         data = await ctx.db.fetchval('SELECT is_bot_setuped FROM server_configs WHERE guild_id = $1',ctx.guild.id)
-        if data == False:
+        if data is False:
             raise expectations.NotSetup
         data = await ctx.db.fetchrow('SELECT * FROM public.server_configs WHERE guild_id = $1',ctx.guild.id)
         
         if args == 'autorole':
-            if data['autorole_toggle'] == False:
+            if data['autorole_toggle'] is False:
                 await ctx.db.execute('UPDATE public.server_configs SET autorole_toggle = $1 WHERE guild_id = $2',True,ctx.guild.id)
                 await ctx.send(f'{emote.tick} | Successfully Enabled Autorole')
                 return
@@ -202,7 +202,7 @@ class BotSettings(commands.Cog):
                 await ctx.send(f'{emote.tick} | Successfully Disabled Autorole')
                 return
         elif args == 'autorole-human':
-            if data['autorole_human_toggle'] == False:
+            if data['autorole_human_toggle'] is False:
                 await ctx.db.execute('UPDATE public.server_configs SET autorole_human_toggle = $1 WHERE guild_id = $2',True,ctx.guild.id)
                 await ctx.send(f'{emote.tick} | Successfully Enabled Autorole For Humans')
                 return
@@ -211,7 +211,7 @@ class BotSettings(commands.Cog):
                 await ctx.send(f'{emote.tick} | Successfully Disabled Autorole For Humans')
                 return
         elif args == 'autorole-bot':
-            if data['autorole_bot_toggle'] == False:
+            if data['autorole_bot_toggle'] is False:
                 await ctx.db.execute('UPDATE public.server_configs SET autorole_bot_toggle = $1 WHERE guild_id = $2',True,ctx.guild.id)
                 await ctx.send(f'{emote.tick} | Successfully Enabled Autorole For Bots')
                 return
@@ -220,7 +220,7 @@ class BotSettings(commands.Cog):
                 await ctx.send(f'{emote.tick} | Successfully Disabled Autorole For Bots')
                 return
         elif args == 'automeme':
-            if data['automeme_toogle'] == False:
+            if data['automeme_toogle'] is False:
                 await ctx.db.execute('UPDATE public.server_configs SET automeme_toogle = $1 WHERE guild_id = $2',True,ctx.guild.id)
                 await ctx.send(f'{emote.tick} | Successfully Enabled Automeme')
                 return
