@@ -14,17 +14,17 @@ class Error(commands.Cog,name='Error'):
     async def on_command_error(self,ctx, error):
         if hasattr(ctx.command, 'on_error'):
             return
-            
-        elif isinstance(error, expectations.Credoerror):
+    
+        if isinstance(error, expectations.Credoerror):
             return await ctx.error(f'{error.__str__().format(ctx=ctx)}')
-            
-        elif isinstance(error, commands.MissingPermissions):
+    
+        if isinstance(error, commands.MissingPermissions):
             permissions = '\n'.join(
                 [f'> {permission}' for permission in error.missing_perms])
             message = f'{random.choice(ERROR_REPLIES)} | You Are missing **`{permissions}`** permissions to run the command.'
-            
+    
             await ctx.error(message)
-        
+
         elif isinstance(error, errors.MissingRequiredArgument):
             await ctx.error(f'{random.choice(NEGATIVE_REPLIES)} | You missed the `{error.param.name}` argument.')
             helper = str(ctx.invoked_subcommand) if ctx.invoked_subcommand else str(
@@ -98,7 +98,7 @@ class Error(commands.Cog,name='Error'):
             return
         
 
-            
+    
         elif isinstance(error, discord.ext.commands.errors.DisabledCommand):
             await ctx.error('Hey Man, The Command Is Disabled')
 

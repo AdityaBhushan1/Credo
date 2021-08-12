@@ -229,8 +229,7 @@ class Context(commands.Context):
             fp = io.BytesIO(content.encode())
             kwargs.pop('file', None)
             return await self.send(file=discord.File(fp, filename='message_too_long.txt'), **kwargs)
-        else:
-            return await self.send(content)
+        return await self.send(content)
     
     async def error(self, message, delete_after=None):
         return await self.send(

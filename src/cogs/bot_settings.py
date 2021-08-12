@@ -151,8 +151,7 @@ class BotSettings(commands.Cog):
         if role.position > botrole.position:
             await ctx.send(f'{emote.error} | My Role Is Not Above The Mentioned Role, Please Put My Role Above The Mentioned Role And Try Again')
             return
-        else:
-            pass
+        pass
         await ctx.db.execute('UPDATE public.server_configs SET autorole_human = $2,autorole_human_toggle = $3 WHERE guild_id = $1', ctx.guild.id, role.id,True)
         await ctx.send(f'{emote.tick} | Successfully Set Autorole For Humans To {role.name}')
 
@@ -170,8 +169,7 @@ class BotSettings(commands.Cog):
         if role.position > botrole.position:
             await ctx.send(f'{emote.error} | My Role Is Not Above The Mentioned Role, Please Put My Role Above The Mentioned Role And Try Again')
             return
-        else:
-            pass
+        pass
         await ctx.db.execute('UPDATE public.server_configs SET autorole_bot = $2,autorole_bot_toggle = True WHERE guild_id = $1', ctx.guild.id, role.id,True)
         await ctx.send(f'{emote.tick} | Successfully Set Autorole For Bots To {role.name}')
 
@@ -197,37 +195,33 @@ class BotSettings(commands.Cog):
                 await ctx.db.execute('UPDATE public.server_configs SET autorole_toggle = $1 WHERE guild_id = $2',True,ctx.guild.id)
                 await ctx.send(f'{emote.tick} | Successfully Enabled Autorole')
                 return
-            else:
-                await ctx.db.execute('UPDATE public.server_configs SET autorole_toggle = $1 WHERE guild_id = $2',False,ctx.guild.id)
-                await ctx.send(f'{emote.tick} | Successfully Disabled Autorole')
-                return
+            await ctx.db.execute('UPDATE public.server_configs SET autorole_toggle = $1 WHERE guild_id = $2',False,ctx.guild.id)
+            await ctx.send(f'{emote.tick} | Successfully Disabled Autorole')
+            return
         elif args == 'autorole-human':
             if data['autorole_human_toggle'] is False:
                 await ctx.db.execute('UPDATE public.server_configs SET autorole_human_toggle = $1 WHERE guild_id = $2',True,ctx.guild.id)
                 await ctx.send(f'{emote.tick} | Successfully Enabled Autorole For Humans')
                 return
-            else:
-                await ctx.db.execute('UPDATE public.server_configs SET autorole_human_toggle = $1 WHERE guild_id = $2',False,ctx.guild.id)
-                await ctx.send(f'{emote.tick} | Successfully Disabled Autorole For Humans')
-                return
+            await ctx.db.execute('UPDATE public.server_configs SET autorole_human_toggle = $1 WHERE guild_id = $2',False,ctx.guild.id)
+            await ctx.send(f'{emote.tick} | Successfully Disabled Autorole For Humans')
+            return
         elif args == 'autorole-bot':
             if data['autorole_bot_toggle'] is False:
                 await ctx.db.execute('UPDATE public.server_configs SET autorole_bot_toggle = $1 WHERE guild_id = $2',True,ctx.guild.id)
                 await ctx.send(f'{emote.tick} | Successfully Enabled Autorole For Bots')
                 return
-            else:
-                await ctx.db.execute('UPDATE public.server_configs SET autorole_bot_toggle = $1 WHERE guild_id = $2',False,ctx.guild.id)
-                await ctx.send(f'{emote.tick} | Successfully Disabled Autorole For Bots')
-                return
+            await ctx.db.execute('UPDATE public.server_configs SET autorole_bot_toggle = $1 WHERE guild_id = $2',False,ctx.guild.id)
+            await ctx.send(f'{emote.tick} | Successfully Disabled Autorole For Bots')
+            return
         elif args == 'automeme':
             if data['automeme_toogle'] is False:
                 await ctx.db.execute('UPDATE public.server_configs SET automeme_toogle = $1 WHERE guild_id = $2',True,ctx.guild.id)
                 await ctx.send(f'{emote.tick} | Successfully Enabled Automeme')
                 return
-            else:
-                await ctx.db.execute('UPDATE public.server_configs SET automeme_toogle = $1 WHERE guild_id = $2',False,ctx.guild.id)
-                await ctx.send(f'{emote.tick} | Successfully Disabled Automeme')
-                return
+            await ctx.db.execute('UPDATE public.server_configs SET automeme_toogle = $1 WHERE guild_id = $2',False,ctx.guild.id)
+            await ctx.send(f'{emote.tick} | Successfully Disabled Automeme')
+            return
         else:
             await ctx.send(f'{emote.error} | Thats Not A Valid Argument Please Choose A valid Argument')
             await ctx.send_help(ctx.command)
