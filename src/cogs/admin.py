@@ -6,9 +6,8 @@ from .utils.util import traceback_maker,clean_code
 from .utils.emote import tick, error
 import traceback
 import io
-from .utils.paginitators import Pag, TeaPages,TextPageSource,TeaPages
+from .utils.paginitators import Pag, TextPageSource,TeaPages
 import contextlib
-import io
 import textwrap
 from .utils.formats import TabularData, plural
 import time

@@ -5,7 +5,6 @@ from . import emote
 from typing import Optional
 from abc import ABC
 from discord import Message, Embed, TextChannel, errors
-from typing import Optional
 
 __all__ = ("ConfirmationPrompt")
 
