@@ -27,8 +27,7 @@ class Fun(commands.Cog, name='Fun'):
         if meme.nsfw is True:
             await ctx.send('An Error Occured.')
             return
-        else:
-            pass
+        pass
         em = discord.Embed(title = f'{meme.title}',color=self.bot.color)
         em.set_image(url=meme.image_url)
         em.set_footer(text=f'👍 {meme.upvotes} 👎 {meme.downvotes}')

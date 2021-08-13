@@ -19,8 +19,7 @@ def traceback_maker(err, advance: bool = True):
 def clean_code(content):
     if content.startswith("```") and content.endswith("```"):
         return "\n".join(content.split("\n")[1:])[:-3]
-    else:
-        return content
+    return content
 
 async def get_or_fetch_member(guild, member_id):
         """Looks up a member in cache or fetches if not found.
