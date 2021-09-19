@@ -1,5 +1,5 @@
  ![discord.py Version](https://img.shields.io/badge/lib-discord.py%201.7.0-blue) ![Language](https://img.shields.io/badge/lang-Python%203.8.6-green) <!--[![Discord Bots](https://top.gg/api/widget/status/782867672626364456.svg)](https://top.gg/bot/782867672626364456) [![Discord Bots](https://top.gg/api/widget/servers/782867672626364456.svg)](https://top.gg/bot/782867672626364456) [![Discord Bots](https://top.gg/api/widget/upvotes/782867672626364456.svg)](https://top.gg/bot/782867672626364456) [![Discord Bots](https://top.gg/api/widget/owner/782867672626364456.svg)](https://top.gg/bot/782867672626364456)--> ![Made with](https://img.shields.io/badge/Made%20With-LOVE-%23fa4b4b?style=flat-square) 
-![MIT License](https://img.shields.io/github/license/Arthurdw/Reaction-Role?style=flat-square)
+![MIT License](https://img.shields.io/github/license/Arthurdw/Reaction-Role?style=flat-square) [![DeepSource](https://deepsource.io/gh/AQUATRIX-DEVELOPMENT/Credo.svg/?label=active+issues&token=QBsa-6USOU8VvCajsXEnb_zW)](https://deepsource.io/gh/AQUATRIX-DEVELOPMENT/Credo/?ref=repository-badge) [![DeepSource](https://deepsource.io/gh/AQUATRIX-DEVELOPMENT/Credo.svg/?label=resolved+issues&token=QBsa-6USOU8VvCajsXEnb_zW)](https://deepsource.io/gh/AQUATRIX-DEVELOPMENT/Credo/?ref=repository-badge)
 
 <br />
 <p align="center">
