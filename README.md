@@ -3,7 +3,7 @@
 
 <br />
 <p align="center">
-    <img src="https://cdn.discordapp.com/avatars/862957770599825418/0fa86b9cc12348c1c7c2c5e7a4b0c308.jpeg?size=1024" alt="Logo" width="80" height="80">
+    <img src="https://cdn.discordapp.com/avatars/862957770599825418/ddc923ec59133519d582f2bff7898040.jpeg?size=1024" alt="Logo" width="80" height="80">
 
   <h3 align="center">Credo</h3>
 
